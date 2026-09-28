@@ -1,0 +1,207 @@
+/* Custom styles & utilities for E-Signature app */
+
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-light: #eef2ff;
+  --accent: #06b6d4;
+  --ink-black: #111827;
+  --ink-blue: #1e3a8a;
+  --ink-crimson: #991b1b;
+  --ink-forest: #166534;
+}
+
+/* Smooth font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+/* Transparent checkerboard background */
+.bg-checkered {
+  background-color: #f8fafc;
+  background-image: 
+    linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
+    linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
+    linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Drawing Canvas custom cursor */
+.cursor-pen {
+  cursor: crosshair;
+}
+
+/* Document & Overlay Container */
+.doc-page-container {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease-out;
+  transform-origin: top center;
+}
+
+/* Draggable & Resizable Elements on Document */
+.placed-element {
+  position: absolute;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  transition: box-shadow 0.12s ease;
+  border: 1.5px dashed transparent;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.placed-element:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.placed-element.selected {
+  border: 1.5px solid #4f46e5;
+  background-color: rgba(79, 70, 229, 0.04);
+  cursor: move;
+}
+
+/* Handle for resizing */
+.placed-element .resize-handle {
+  display: none;
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #4f46e5;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  right: -7px;
+  bottom: -7px;
+  cursor: nwse-resize;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  z-index: 10;
+}
+
+.placed-element.selected .resize-handle {
+  display: block;
+}
+
+/* Element floating action toolbar when selected */
+.placed-element .element-toolbar {
+  display: none;
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: white;
+  border-radius: 8px;
+  padding: 3px 6px;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  z-index: 20;
+}
+
+.placed-element.selected .element-toolbar {
+  display: flex;
+}
+
+/* Ripple & pulse animation */
+@keyframes subtle-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+.animate-subtle-pulse {
+  animation: subtle-pulse 3s infinite ease-in-out;
+}
+
+/* Stamp styles */
+.stamp-seal {
+  border: 3px double;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+/* Toast notifications */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  min-width: 260px;
+  max-width: 380px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: #1e293b;
+  color: white;
+  font-size: 14px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideInUp 0.25s ease-out forwards;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body, .doc-page-container {
+    background: white !important;
+    box-shadow: none !important;
+  }
+}
