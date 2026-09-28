@@ -127,38 +127,87 @@ document.addEventListener('DOMContentLoaded', () => {
   // Mode Switcher: Quick Signature Studio vs Document Signer
   function switchAppMode(mode) {
     state.activeAppMode = mode;
+    const viewQuick = document.getElementById('view-quick-signature');
+    const viewDoc = document.getElementById('view-doc-signer');
+
     if (mode === 'quick') {
-      viewQuickSig.classList.remove('hidden');
-      viewDocSigner.classList.add('hidden');
+      if (viewQuick) {
+        viewQuick.classList.remove('hidden');
+        viewQuick.style.setProperty('display', 'flex', 'important');
+      }
+      if (viewDoc) {
+        viewDoc.classList.add('hidden');
+        viewDoc.style.setProperty('display', 'none', 'important');
+      }
 
       navModeQuick.className = 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 bg-white text-indigo-700 shadow-sm';
       navModeDoc.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60';
 
-      docHeaderActions.classList.add('hidden');
+      if (docHeaderActions) docHeaderActions.classList.add('hidden');
       if (heroSigPad && state.activeQuickTab === 'draw') {
         setTimeout(() => heroSigPad.resize(), 50);
       }
     } else {
-      viewQuickSig.classList.add('hidden');
-      viewDocSigner.classList.remove('hidden');
+      if (viewQuick) {
+        viewQuick.classList.add('hidden');
+        viewQuick.style.setProperty('display', 'none', 'important');
+      }
+      if (viewDoc) {
+        viewDoc.classList.remove('hidden');
+        viewDoc.style.setProperty('display', 'flex', 'important');
+      }
 
       navModeDoc.className = 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 bg-white text-indigo-700 shadow-sm';
       navModeQuick.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60';
 
       if (state.currentDoc) {
-        docHeaderActions.classList.remove('hidden');
+        if (docHeaderActions) docHeaderActions.classList.remove('hidden');
+      } else {
+        if (emptyState) emptyState.classList.remove('hidden');
+        if (docWorkspace) docWorkspace.classList.add('hidden');
       }
     }
   }
 
-  navModeQuick?.addEventListener('click', () => switchAppMode('quick'));
-  navModeDoc?.addEventListener('click', () => switchAppMode('doc'));
+  navModeQuick?.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchAppMode('quick');
+  });
+
+  navModeDoc?.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchAppMode('doc');
+  });
+
   brandLogoBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     switchAppMode('quick');
   });
-  backToQuickSigBtn?.addEventListener('click', () => switchAppMode('quick'));
-  heroOpenDocBtn?.addEventListener('click', () => switchAppMode('doc'));
+
+  backToQuickSigBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchAppMode('quick');
+  });
+
+  heroOpenDocBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchAppMode('doc');
+  });
+
+  document.querySelectorAll('.hero-sample-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const templateId = btn.dataset.template;
+      switchAppMode('doc');
+      loadTemplate(templateId);
+    });
+  });
+
+  document.getElementById('hero-upload-doc-direct-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchAppMode('doc');
+    fileInput?.click();
+  });
 
   /* ========================================================
      QUICK SIGNATURE STUDIO (HIGHLIGHT) ENGINE
@@ -372,18 +421,42 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Hero Action: Sign a Document with This (Seamless Transition)
-  heroUseOnDocBtn?.addEventListener('click', () => {
-    const dataUrl = getActiveSignatureDataUrl();
-    if (!dataUrl) return;
+  heroUseOnDocBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    let dataUrl = null;
+    try {
+      if (state.activeQuickTab === 'draw' && heroSigPad && !heroSigPad.isEmpty()) {
+        dataUrl = heroSigPad.toDataURL('image/png');
+      } else if (state.activeQuickTab === 'type') {
+        const text = heroTypeInput?.value.trim() || 'Alex Morgan';
+        dataUrl = TypeSignatureGenerator.generate({
+          text,
+          fontFamily: state.activeFont || 'Caveat',
+          color: state.signatureColor,
+          fontSize: 64
+        });
+      } else if (state.activeQuickTab === 'upload' && heroUploadPreviewImg?.src) {
+        dataUrl = heroUploadPreviewImg.src;
+      } else if (state.activeSignatureDataUrl) {
+        dataUrl = state.activeSignatureDataUrl;
+      }
+    } catch (err) {
+      console.warn('Could not grab signature preview:', err);
+    }
 
-    state.activeSignatureDataUrl = dataUrl;
+    if (dataUrl) {
+      state.activeSignatureDataUrl = dataUrl;
+    }
+
     switchAppMode('doc');
 
-    if (state.currentDoc) {
+    if (dataUrl && state.currentDoc) {
       addElementToPage('signature', dataUrl);
       showToast('Placed signature onto document!', 'success');
-    } else {
+    } else if (dataUrl) {
       showToast('Signature ready! Select or upload a document to stamp it.', 'info');
+    } else {
+      showToast('Document module opened. Choose or upload a document.', 'info');
     }
   });
 
