@@ -1,718 +1,438 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kakaw E Signiture — Quick Digital Signature & E-Sign Suite</title>
-  <meta name="description" content="Create, copy, and download your digital signature in seconds. Transparent PNG, smooth drawing, cursive typing, and client-side PDF document signing.">
-  
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Caveat:wght@600&family=Dancing+Script:wght@600&family=Great+Vibes&family=Inter:wght@400;500;600;700;800&family=Pacifico&family=Sacramento&display=swap" rel="stylesheet">
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            caveat: ['Caveat', 'cursive'],
-            dancing: ['"Dancing Script"', 'cursive'],
-            vibes: ['"Great Vibes"', 'cursive'],
-            alex: ['"Alex Brush"', 'cursive'],
-            sacramento: ['Sacramento', 'cursive'],
-            pacifico: ['Pacifico', 'cursive']
-          }
-        }
-      }
-    }
-  </script>
-
-  <!-- PDF.js CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <!-- PDF-Lib CDN -->
-  <script src="https://unpkg.com/pdf-lib@1.17.9/dist/pdf-lib.min.js"></script>
-
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body class="bg-slate-900 text-slate-800 flex flex-col h-screen overflow-hidden font-sans">
-
-  <!-- Top Navigation Bar -->
-  <header class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shadow-xs z-30 shrink-0">
-    <div class="flex items-center gap-3">
-      <!-- App Brand Logo -->
-      <a href="#" id="brand-logo-btn" class="flex items-center gap-2.5 group">
-        <div class="w-9 h-9 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-100 group-hover:scale-105 transition-transform">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-          </svg>
-        </div>
-        <div>
-          <span class="font-extrabold text-lg text-slate-900 tracking-tight flex items-center gap-1.5">
-            Kakaw E Signiture <span class="text-[10px] uppercase font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200">Free</span>
-          </span>
-        </div>
-      </a>
-    </div>
-
-    <!-- Center Mode Switcher Tabs (Quick Signature Highlighted) -->
-    <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
-      <button id="nav-mode-quick" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 bg-white text-indigo-700 shadow-sm">
-        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-        </svg>
-        <span>Quick Signature Studio</span>
-        <span class="hidden sm:inline-block text-[9px] bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-semibold uppercase tracking-wider">Highlight</span>
-      </button>
-
-      <button id="nav-mode-doc" class="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60">
-        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <span>Sign Document (PDF)</span>
-      </button>
-    </div>
-
-    <!-- Right Header Actions -->
-    <div class="flex items-center gap-2.5">
-      <!-- Privacy Badge -->
-      <div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-xs text-emerald-800 font-medium">
-        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-        </svg>
-        <span>100% In-Browser Private</span>
-      </div>
-
-      <!-- Document Specific Actions (Active when in document mode with doc loaded) -->
-      <div id="doc-header-actions" class="hidden flex items-center gap-2">
-        <button id="clear-all-doc-btn" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
-          Clear
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kakaw — Signature</title>
+    <meta
+      name="description"
+      content="Create a signature and add it to a PDF, right in your browser."
+    />
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Dancing+Script:wght@600&family=Great+Vibes&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script
+      defer
+      src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"
+    ></script>
+    <script defer src="js/signature-pad.js"></script>
+    <script defer src="js/templates.js"></script>
+    <script defer src="js/pdf-handler.js"></script>
+    <script defer src="js/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#view-quick-signature">Skip to workspace</a>
+    <header class="app-header">
+      <a
+        href="#"
+        id="brand-logo-btn"
+        class="brand"
+        aria-label="Kakaw Signature home"
+        ><span class="brand-mark">k.</span
+        ><span>Kakaw <small>Signature</small></span></a
+      >
+      <nav class="mode-nav" aria-label="Workspace">
+        <button id="nav-mode-quick" aria-pressed="true">
+          Create signature
         </button>
-        <button id="export-modal-trigger" class="px-4 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm hover:shadow transition flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-          </svg>
-          <span>Finish & Download</span>
-        </button>
-      </div>
-    </div>
-  </header>
+        <button id="nav-mode-doc" aria-pressed="false">Sign document</button>
+      </nav>
+      <span class="header-note">A little less paperwork.</span>
+    </header>
 
-  <!-- ========================================================
-       SECTION 1: QUICK SIGNATURE STUDIO (PRIMARY HIGHLIGHT)
-       ======================================================== -->
-  <main id="view-quick-signature" class="flex-1 overflow-y-auto bg-gradient-to-b from-slate-50 via-slate-100 to-indigo-50/40 p-4 sm:p-6 lg:p-8 flex flex-col items-center">
-    
-    <div class="w-full max-w-4xl space-y-6">
-
-      <!-- Hero Header -->
-      <div class="text-center space-y-2 pt-2 pb-1">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100/80 border border-indigo-200/80 text-indigo-800 text-xs font-bold tracking-wide shadow-xs">
-          <span>✨</span>
-          <span>Instant Signature Creator • Free & Private</span>
-        </div>
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Create & Download Your Signature
-        </h1>
-        <p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
-          Draw smoothly with realistic fountain-pen ink, type in elegant calligraphy styles, or clean up a paper snapshot. Download transparent PNGs or copy to clipboard in 1 click.
+    <main id="view-quick-signature" class="signature-view" tabindex="-1">
+      <div class="workspace-heading">
+        <p class="eyebrow">YOUR SIGNATURE, YOUR WAY</p>
+        <h1>Make your mark.</h1>
+        <p>
+          Draw, type, or upload a signature. Keep it as an image or add it to a
+          document.
         </p>
       </div>
-
-      <!-- Main Signature Studio Card -->
-      <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden flex flex-col transition-all">
-        
-        <!-- Studio Mode Selector Tabs -->
-        <div class="flex items-center border-b border-slate-100 bg-slate-50/80 px-4 sm:px-6 gap-2 sm:gap-6 text-sm font-semibold overflow-x-auto">
-          <button data-quick-tab="draw" class="quick-tab-btn py-3.5 px-2 border-b-2 border-indigo-600 text-indigo-600 font-bold active flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-            <span>Draw Signature</span>
-          </button>
-          
-          <button data-quick-tab="type" class="quick-tab-btn py-3.5 px-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
-            <span>Type Cursive</span>
-          </button>
-
-          <button data-quick-tab="upload" class="quick-tab-btn py-3.5 px-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            <span>Scan / Photo Cleaner</span>
-          </button>
-
-          <button data-quick-tab="saved" class="quick-tab-btn py-3.5 px-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-            <span>Saved Signatures</span>
-          </button>
-        </div>
-
-        <!-- Studio Body -->
-        <div class="p-4 sm:p-6">
-          
-          <!-- TAB 1: DRAW SIGNATURE -->
-          <div id="quick-tab-draw" class="quick-tab-panel space-y-4">
-            <!-- Canvas with baseline guide & checkered background -->
-            <div class="relative sig-canvas-container rounded-2xl border-2 border-dashed border-slate-300 bg-checkered overflow-hidden shadow-inner flex items-center justify-center">
-              <canvas id="hero-signature-canvas" class="w-full h-64 sm:h-72 cursor-pen touch-none block"></canvas>
-              
-              <div class="absolute bottom-2.5 right-3 text-[11px] text-slate-400 bg-white/70 backdrop-blur px-2 py-0.5 rounded pointer-events-none select-none">
-                Draw with mouse, trackpad, finger, or stylus
+      <section class="studio" aria-label="Signature editor">
+        <div class="studio-main">
+          <div class="tab-list" role="tablist" aria-label="Signature method">
+            <button
+              id="tab-draw"
+              data-quick-tab="draw"
+              class="quick-tab-btn active"
+              role="tab"
+              aria-selected="true"
+              aria-controls="quick-tab-draw"
+            >
+              Draw
+            </button>
+            <button
+              id="tab-type"
+              data-quick-tab="type"
+              class="quick-tab-btn"
+              role="tab"
+              aria-selected="false"
+              aria-controls="quick-tab-type"
+              tabindex="-1"
+            >
+              Type
+            </button>
+            <button
+              id="tab-upload"
+              data-quick-tab="upload"
+              class="quick-tab-btn"
+              role="tab"
+              aria-selected="false"
+              aria-controls="quick-tab-upload"
+              tabindex="-1"
+            >
+              Upload
+            </button>
+            <button
+              id="tab-saved"
+              data-quick-tab="saved"
+              class="quick-tab-btn"
+              role="tab"
+              aria-selected="false"
+              aria-controls="quick-tab-saved"
+              tabindex="-1"
+            >
+              Saved
+            </button>
+          </div>
+          <div class="editor-body">
+            <div
+              id="quick-tab-draw"
+              class="quick-tab-panel"
+              role="tabpanel"
+              aria-labelledby="tab-draw"
+            >
+              <div class="canvas-heading">
+                <span>Draw your signature</span
+                ><span class="muted">Mouse, touch, or stylus</span>
               </div>
-            </div>
-
-            <!-- Drawing Controls Toolbar -->
-            <div class="flex items-center justify-between flex-wrap gap-3 pt-1">
-              
-              <!-- Ink Color Swatches -->
-              <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
-                <span class="text-xs font-semibold text-slate-600 ml-1.5 mr-1">Ink Color:</span>
-                <button data-color="#0f2b48" class="quick-color-btn w-6 h-6 rounded-full bg-[#0f2b48] ring-2 ring-offset-2 ring-indigo-500 transition shadow-xs" title="Dark Navy"></button>
-                <button data-color="#111827" class="quick-color-btn w-6 h-6 rounded-full bg-[#111827] transition shadow-xs" title="Charcoal Black"></button>
-                <button data-color="#1d4ed8" class="quick-color-btn w-6 h-6 rounded-full bg-[#1d4ed8] transition shadow-xs" title="Royal Blue"></button>
-                <button data-color="#991b1b" class="quick-color-btn w-6 h-6 rounded-full bg-[#991b1b] transition shadow-xs" title="Crimson"></button>
-                <button data-color="#166534" class="quick-color-btn w-6 h-6 rounded-full bg-[#166534] transition shadow-xs" title="Forest Green"></button>
+              <div class="sig-canvas-container">
+                <canvas
+                  id="hero-signature-canvas"
+                  aria-label="Signature drawing area. Use the Type tab for a keyboard alternative."
+                ></canvas
+                ><span class="canvas-caption">Sign above the line</span>
               </div>
-
-              <!-- Stroke Width & Tools -->
-              <div class="flex items-center gap-2">
-                <div class="flex items-center bg-slate-50 rounded-xl border border-slate-200 p-1">
-                  <span class="text-xs text-slate-500 font-medium px-2">Pen:</span>
-                  <select id="hero-pen-width-select" class="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 outline-none">
-                    <option value="1.6">Fine (1.6px)</option>
-                    <option value="2.6" selected>Medium (2.6px)</option>
-                    <option value="4.2">Bold (4.2px)</option>
+              <div class="drawing-toolbar">
+                <div class="control-group">
+                  <label for="hero-pen-width-select">Stroke</label
+                  ><select id="hero-pen-width-select">
+                    <option value="1.6">Fine</option>
+                    <option value="2.6" selected>Medium</option>
+                    <option value="4.2">Bold</option>
                   </select>
                 </div>
-
-                <button id="hero-eraser-btn" class="px-3 py-1.5 text-xs font-semibold border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-700 transition flex items-center gap-1.5" title="Eraser">
-                  <span>🧹</span> <span>Eraser</span>
-                </button>
-
-                <button id="hero-undo-btn" class="px-3 py-1.5 text-xs font-semibold border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-700 transition flex items-center gap-1" title="Undo (Ctrl+Z)">
-                  <span>↺</span> <span>Undo</span>
-                </button>
-
-                <button id="hero-clear-btn" class="px-3 py-1.5 text-xs font-semibold border border-slate-200 hover:bg-rose-50 text-rose-600 rounded-xl transition" title="Clear Canvas">
-                  Clear
-                </button>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- TAB 2: TYPE CURSIVE -->
-          <div id="quick-tab-type" class="quick-tab-panel hidden space-y-4">
-            <div class="space-y-1">
-              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Type Your Name</label>
-              <input type="text" id="hero-type-input" value="Alex Morgan" placeholder="Enter your full name or initials..."
-                     class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-base font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" />
-            </div>
-
-            <!-- Cursive Style Selection Grid -->
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Select Calligraphy Style</label>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="hero-font-cards-grid">
-                
-                <button data-font="Caveat" class="font-card-btn active p-3 bg-white border-2 border-indigo-600 rounded-2xl text-left hover:shadow-md transition">
-                  <span class="text-[10px] font-bold text-indigo-600 uppercase">Caveat</span>
-                  <div class="font-caveat text-3xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
-                </button>
-
-                <button data-font="Dancing Script" class="font-card-btn p-3 bg-white border-2 border-slate-200 rounded-2xl text-left hover:border-indigo-400 hover:shadow-md transition">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase">Dancing Script</span>
-                  <div class="font-dancing text-2xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
-                </button>
-
-                <button data-font="Great Vibes" class="font-card-btn p-3 bg-white border-2 border-slate-200 rounded-2xl text-left hover:border-indigo-400 hover:shadow-md transition">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase">Great Vibes</span>
-                  <div class="font-vibes text-2xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
-                </button>
-
-                <button data-font="Sacramento" class="font-card-btn p-3 bg-white border-2 border-slate-200 rounded-2xl text-left hover:border-indigo-400 hover:shadow-md transition">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase">Sacramento</span>
-                  <div class="font-sacramento text-2xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
-                </button>
-
-                <button data-font="Alex Brush" class="font-card-btn p-3 bg-white border-2 border-slate-200 rounded-2xl text-left hover:border-indigo-400 hover:shadow-md transition">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase">Alex Brush</span>
-                  <div class="font-alex text-2xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
-                </button>
-
-                <button data-font="Pacifico" class="font-card-btn p-3 bg-white border-2 border-slate-200 rounded-2xl text-left hover:border-indigo-400 hover:shadow-md transition">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase">Pacifico</span>
-                  <div class="font-pacifico text-2xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
-                </button>
-
-              </div>
-            </div>
-
-            <!-- Preview Display Box -->
-            <div class="p-6 bg-checkered rounded-2xl border border-slate-200 flex items-center justify-center min-h-[140px]">
-              <img id="hero-type-preview-img" class="max-h-24 object-contain" alt="Typed signature preview" />
-            </div>
-          </div>
-
-          <!-- TAB 3: UPLOAD & CLEAN PHOTO -->
-          <div id="quick-tab-upload" class="quick-tab-panel hidden space-y-4">
-            
-            <div class="border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-2xl p-6 text-center cursor-pointer bg-slate-50 transition" onclick="document.getElementById('hero-upload-input').click()">
-              <input type="file" id="hero-upload-input" accept="image/*" class="hidden" />
-              <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              </div>
-              <div class="text-sm font-bold text-slate-800">Upload signature photo or scan</div>
-              <p class="text-xs text-slate-500 mt-1">Take a photo of your signature on white paper. Our AI algorithm cleans the paper background.</p>
-            </div>
-
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
-              <div class="flex items-center justify-between text-xs font-semibold text-slate-700">
-                <span>Background Transparency Sensitivity</span>
-                <span id="threshold-val-text" class="text-indigo-600">Level 215</span>
-              </div>
-              <input type="range" id="hero-upload-slider" min="140" max="250" value="215" class="w-full accent-indigo-600 cursor-pointer" />
-            </div>
-
-            <div class="p-6 bg-checkered rounded-2xl border border-slate-200 flex items-center justify-center min-h-[140px]">
-              <img id="hero-upload-preview-img" class="max-h-24 object-contain" alt="Cleaned signature preview" />
-            </div>
-
-          </div>
-
-          <!-- TAB 4: SAVED SIGNATURES -->
-          <div id="quick-tab-saved" class="quick-tab-panel hidden space-y-3">
-            <div id="hero-saved-list" class="grid grid-cols-2 sm:grid-cols-3 gap-3 min-h-[180px]">
-              <!-- Dynamically populated from localStorage -->
-            </div>
-          </div>
-
-        </div>
-
-        <!-- HIGHLIGHT ACTION BAR (The Main Output Controls) -->
-        <div class="bg-gradient-to-r from-slate-50 via-indigo-50/30 to-slate-50 border-t border-slate-200/80 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          
-          <!-- Secondary Actions (Left) -->
-          <div class="flex items-center gap-2 w-full sm:w-auto">
-            <button id="hero-copy-btn" class="flex-1 sm:flex-initial px-4 py-2.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 border border-slate-200 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
-              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
-              </svg>
-              <span>Copy to Clipboard</span>
-            </button>
-
-            <button id="hero-save-btn" class="px-3.5 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-xs transition flex items-center gap-1.5" title="Save signature to browser for future use">
-              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-              <span>Save</span>
-            </button>
-          </div>
-
-          <!-- Highlight Primary Actions (Right) -->
-          <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-            <!-- Sign Document With This -->
-            <button id="hero-use-on-doc-btn" class="flex-1 sm:flex-initial px-4 py-2.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition flex items-center justify-center gap-1.5">
-              <span>Sign a Document with this</span>
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-            </button>
-
-            <!-- Prominent Download PNG Button -->
-            <button id="hero-download-png-btn" class="flex-1 sm:flex-initial px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 rounded-xl shadow-md btn-glow transition flex items-center justify-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-              </svg>
-              <span class="tracking-wide">Download Transparent PNG</span>
-            </button>
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- Feature Grid Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-start gap-3">
-          <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-slate-800">Transparent PNG</div>
-            <div class="text-[11px] text-slate-500 mt-0.5">Auto-trimmed borders. Cleanly inserts into Word, Docs & emails.</div>
-          </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-start gap-3">
-          <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-slate-800">100% Client-Side</div>
-            <div class="text-[11px] text-slate-500 mt-0.5">No cloud uploads. Your signature never leaves your device.</div>
-          </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-start gap-3">
-          <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-slate-800">Smooth Ink Dynamics</div>
-            <div class="text-[11px] text-slate-500 mt-0.5">Velocity-sensitive bezier curves simulate real ballpoint & fountain pens.</div>
-          </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-start gap-3">
-          <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-slate-800">Mobile & Stylus Ready</div>
-            <div class="text-[11px] text-slate-500 mt-0.5">Sign with your finger or Apple Pencil on any tablet or smartphone.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Jump to Document Signer Banner -->
-      <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-5 sm:p-6 rounded-3xl shadow-lg space-y-4">
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div class="space-y-1 text-center sm:text-left">
-            <div class="font-extrabold text-base flex items-center justify-center sm:justify-start gap-2">
-              <span>📄</span> <span>Sign a Full PDF Contract or Agreement</span>
-            </div>
-            <p class="text-xs text-slate-300">
-              Upload your document, drag & drop signatures, date stamps & seals, and export with an audit certificate.
-            </p>
-          </div>
-
-          <button id="hero-open-doc-btn" class="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-2 shrink-0">
-            <span>Open Document Signer</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-
-        <div class="pt-3 border-t border-slate-700/60 flex flex-wrap items-center gap-2">
-          <span class="text-xs text-slate-400 font-semibold mr-1">Or launch sample:</span>
-          <button data-template="nda" class="hero-sample-btn px-3 py-1.5 bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-medium border border-slate-700 transition flex items-center gap-1.5">
-            <span>📄</span> <span>Mutual NDA</span>
-          </button>
-          <button data-template="freelance" class="hero-sample-btn px-3 py-1.5 bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-medium border border-slate-700 transition flex items-center gap-1.5">
-            <span>💼</span> <span>Freelance Contract</span>
-          </button>
-          <button data-template="approval" class="hero-sample-btn px-3 py-1.5 bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-medium border border-slate-700 transition flex items-center gap-1.5">
-            <span>🏆</span> <span>Project Acceptance Cert</span>
-          </button>
-          <button id="hero-upload-doc-direct-btn" class="px-3 py-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5 sm:ml-auto">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-            <span>Upload PDF File</span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-  </main>
-
-
-  <!-- ========================================================
-       SECTION 2: FULL DOCUMENT SIGNER WORKSPACE
-       ======================================================== -->
-  <div id="view-doc-signer" class="hidden flex-1 flex overflow-hidden">
-
-    <!-- Left Tools & Signer Sidebar -->
-    <aside id="tools-sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 transition-all duration-200">
-      
-      <!-- Field Tools Header -->
-      <div class="p-3 border-b border-slate-100 flex items-center justify-between">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Signing Fields</h2>
-        <button id="back-to-quick-sig-btn" class="text-xs text-indigo-600 hover:underline font-semibold">
-          ← Quick Studio
-        </button>
-      </div>
-
-      <!-- Action Tool Buttons -->
-      <div class="p-3 space-y-2 flex-1 overflow-y-auto">
-        
-        <button id="tool-signature-btn" class="w-full flex items-center gap-3 p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100 text-indigo-900 transition text-left group">
-          <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-slate-800 group-hover:text-indigo-950">Add Signature</div>
-            <div class="text-[11px] text-slate-500">Stamp active signature</div>
-          </div>
-        </button>
-
-        <button id="tool-initials-btn" class="w-full flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-800 transition text-left group">
-          <div class="w-8 h-8 rounded-lg bg-slate-700 text-white flex items-center justify-center shrink-0">
-            <span class="text-xs font-bold font-serif">IN</span>
-          </div>
-          <div>
-            <div class="text-xs font-semibold text-slate-800 group-hover:text-indigo-600">Initials Stamp</div>
-            <div class="text-[11px] text-slate-500">Place initials badge</div>
-          </div>
-        </button>
-
-        <button id="tool-date-btn" class="w-full flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-800 transition text-left group">
-          <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-xs font-semibold text-slate-800 group-hover:text-indigo-600">Date Signed</div>
-            <div class="text-[11px] text-slate-500">Auto today's date</div>
-          </div>
-        </button>
-
-        <button id="tool-name-btn" class="w-full flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-800 transition text-left group">
-          <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-xs font-semibold text-slate-800 group-hover:text-indigo-600">Signer Name</div>
-            <div class="text-[11px] text-slate-500">Printed full name</div>
-          </div>
-        </button>
-
-        <button id="tool-text-btn" class="w-full flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-800 transition text-left group">
-          <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-xs font-semibold text-slate-800 group-hover:text-indigo-600">Custom Text</div>
-            <div class="text-[11px] text-slate-500">Title, company, note</div>
-          </div>
-        </button>
-
-        <button id="tool-seal-btn" class="w-full flex items-center gap-3 p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-900 transition text-left group">
-          <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-xs font-semibold text-emerald-900">Approved Seal</div>
-            <div class="text-[11px] text-emerald-700">Official approval stamp</div>
-          </div>
-        </button>
-
-        <!-- Pages Thumbnail Navigator -->
-        <div class="pt-3 border-t border-slate-200 mt-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pages</span>
-          </div>
-          <div id="page-thumbnails" class="space-y-1.5 max-h-44 overflow-y-auto pr-1">
-            <!-- Rendered dynamically -->
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Sidebar Footer -->
-      <div class="p-3 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
-        <span class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Ready to sign
-        </span>
-        <button onclick="document.getElementById('file-upload-input').click()" class="text-indigo-600 hover:underline font-semibold">Change File</button>
-      </div>
-    </aside>
-
-    <!-- Center Document Stage -->
-    <main class="flex-1 flex flex-col relative bg-slate-200/70 overflow-hidden">
-
-      <!-- Empty State / Document Upload Screen -->
-      <div id="empty-state" class="flex-1 overflow-y-auto flex items-center justify-center p-6">
-        <div class="max-w-2xl w-full">
-          
-          <!-- Dropzone Card -->
-          <div id="drop-zone" class="bg-white border-2 border-dashed border-slate-300 rounded-3xl p-8 sm:p-12 text-center shadow-sm hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer group">
-            <input type="file" id="file-upload-input" accept="application/pdf,image/png,image/jpeg,image/webp" class="hidden" />
-            
-            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-              </svg>
-            </div>
-
-            <h3 class="text-lg font-bold text-slate-800 mb-1">Upload a Document to Sign</h3>
-            <p class="text-sm text-slate-500 mb-6">Drag and drop your PDF or Image here, or click to browse</p>
-
-            <button onclick="document.getElementById('file-upload-input').click()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-sm transition">
-              Select Document
-            </button>
-
-            <div class="mt-6 flex items-center justify-center gap-4 text-xs text-slate-400">
-              <span class="flex items-center gap-1">
-                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> PDF Documents
-              </span>
-              <span class="flex items-center gap-1">
-                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> PNG & JPG
-              </span>
-              <span class="flex items-center gap-1">
-                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 100% In-Browser
-              </span>
-            </div>
-          </div>
-
-          <!-- Or Try Sample Agreement Templates -->
-          <div class="mt-8">
-            <div class="text-center mb-3">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Or try a sample agreement:</span>
-            </div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <button data-template="nda" class="template-card-btn bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition text-left group">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="text-base">📄</span>
-                  <span class="text-[10px] font-bold uppercase bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded">Legal</span>
+                <div class="control-group">
+                  <button id="hero-eraser-btn" aria-pressed="false">
+                    Eraser</button
+                  ><button id="hero-undo-btn">Undo</button
+                  ><button id="hero-clear-btn">Clear</button>
                 </div>
-                <div class="font-bold text-xs text-slate-800 group-hover:text-indigo-600">Mutual NDA</div>
-                <div class="text-[11px] text-slate-400 truncate mt-0.5">Non-disclosure agreement</div>
-              </button>
-
-              <button data-template="freelance" class="template-card-btn bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition text-left group">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="text-base">💼</span>
-                  <span class="text-[10px] font-bold uppercase bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">Business</span>
-                </div>
-                <div class="font-bold text-xs text-slate-800 group-hover:text-indigo-600">Contractor Agreement</div>
-                <div class="text-[11px] text-slate-400 truncate mt-0.5">2-page master contract</div>
-              </button>
-
-              <button data-template="approval" class="template-card-btn bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition text-left group">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="text-base">🏆</span>
-                  <span class="text-[10px] font-bold uppercase bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded">Sign-Off</span>
-                </div>
-                <div class="font-bold text-xs text-slate-800 group-hover:text-indigo-600">Project Acceptance</div>
-                <div class="text-[11px] text-slate-400 truncate mt-0.5">Milestone handover cert</div>
-              </button>
+              </div>
+            </div>
+            <div
+              id="quick-tab-type"
+              class="quick-tab-panel hidden"
+              role="tabpanel"
+              aria-labelledby="tab-type"
+            >
+              <label for="hero-type-input">Your name</label
+              ><input
+                type="text"
+                id="hero-type-input"
+                placeholder="Enter your name"
+                maxlength="80"
+                autocomplete="name"
+              />
+              <div
+                id="hero-font-cards-grid"
+                class="font-grid"
+                aria-label="Handwriting style"
+              >
+                <button
+                  data-font="Caveat"
+                  class="font-card-btn active"
+                  aria-pressed="true"
+                >
+                  <span>Caveat</span>
+                  <div
+                    class="preview-name"
+                    style="font-family: Caveat, cursive"
+                  >
+                    Your name
+                  </div>
+                </button>
+                <button
+                  data-font="Dancing Script"
+                  class="font-card-btn"
+                  aria-pressed="false"
+                >
+                  <span>Dancing Script</span>
+                  <div
+                    class="preview-name"
+                    style="font-family: &quot;Dancing Script&quot;, cursive"
+                  >
+                    Your name
+                  </div>
+                </button>
+                <button
+                  data-font="Great Vibes"
+                  class="font-card-btn"
+                  aria-pressed="false"
+                >
+                  <span>Great Vibes</span>
+                  <div
+                    class="preview-name"
+                    style="font-family: &quot;Great Vibes&quot;, cursive"
+                  >
+                    Your name
+                  </div>
+                </button>
+              </div>
+              <div class="signature-preview bg-checkered">
+                <img
+                  id="hero-type-preview-img"
+                  alt="Typed signature preview"
+                  hidden
+                /><span id="type-placeholder" class="muted"
+                  >Your signature preview appears here</span
+                >
+              </div>
+            </div>
+            <div
+              id="quick-tab-upload"
+              class="quick-tab-panel hidden"
+              role="tabpanel"
+              aria-labelledby="tab-upload"
+            >
+              <label class="upload-label" for="hero-upload-input"
+                >Choose a signature image</label
+              ><input
+                type="file"
+                id="hero-upload-input"
+                accept="image/png,image/jpeg,image/webp"
+              />
+              <p class="helper">
+                Use dark ink on light paper. PNG, JPG, or WebP.
+              </p>
+              <div class="range-heading">
+                <label for="hero-upload-slider">Remove light background</label
+                ><span id="threshold-val-text">215</span>
+              </div>
+              <input
+                type="range"
+                id="hero-upload-slider"
+                min="140"
+                max="250"
+                value="215"
+              />
+              <div class="signature-preview bg-checkered">
+                <img
+                  id="hero-upload-preview-img"
+                  alt="Cleaned signature preview"
+                  hidden
+                /><span id="upload-placeholder" class="muted"
+                  >Your image preview appears here</span
+                >
+              </div>
+            </div>
+            <div
+              id="quick-tab-saved"
+              class="quick-tab-panel hidden"
+              role="tabpanel"
+              aria-labelledby="tab-saved"
+            >
+              <p class="helper">
+                Stored in this browser only. Select a signature to use it.
+              </p>
+              <div id="hero-saved-list" class="saved-grid"></div>
             </div>
           </div>
-
-        </div>
-      </div>
-
-      <!-- Active Document Workspace -->
-      <div id="doc-workspace" class="hidden flex-1 flex flex-col overflow-hidden">
-        
-        <!-- Document Floating Control Header (Zoom & Page Switcher) -->
-        <div class="h-12 bg-white/90 backdrop-blur border-b border-slate-200 px-4 flex items-center justify-between shadow-xs shrink-0 z-20">
-          
-          <!-- Page Navigator -->
-          <div class="flex items-center gap-2">
-            <button id="prev-page-btn" class="p-1 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none text-slate-600" title="Previous Page">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-            </button>
-            <span id="page-indicator" class="text-xs font-semibold text-slate-700 min-w-[85px] text-center">Page 1 of 1</span>
-            <button id="next-page-btn" class="p-1 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none text-slate-600" title="Next Page">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </button>
-          </div>
-
-          <!-- Document Zoom Controls -->
-          <div class="flex items-center gap-1.5">
-            <button id="zoom-out-btn" class="p-1 rounded-lg hover:bg-slate-100 text-slate-600" title="Zoom Out">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
-            </button>
-            <span id="zoom-level-text" class="text-xs font-semibold text-slate-600 min-w-[45px] text-center">100%</span>
-            <button id="zoom-in-btn" class="p-1 rounded-lg hover:bg-slate-100 text-slate-600" title="Zoom In">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            </button>
-            <button id="zoom-fit-btn" class="ml-1 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 rounded" title="Fit to Screen">
-              Fit
-            </button>
-          </div>
-
-          <!-- Tip / Instruction -->
-          <div class="hidden lg:flex items-center gap-1.5 text-xs text-slate-400">
-            <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span>Click elements in left bar to insert • Drag & resize on document</span>
-          </div>
-
-        </div>
-
-        <!-- Scrollable Document Viewport -->
-        <div id="doc-scroll-viewport" class="flex-1 overflow-auto p-8 flex justify-center items-start">
-          
-          <div id="doc-page-container" class="doc-page-container relative bg-white rounded-lg shadow-xl">
-            <!-- Background Rendered Document (PDF/Image Canvas) -->
-            <canvas id="doc-canvas" class="block rounded-lg"></canvas>
-            
-            <!-- Foreground Interactive Layer for Placed Signatures / Fields -->
-            <div id="overlay-layer" class="absolute inset-0 pointer-events-auto overflow-hidden">
-              <!-- Dynamically placed signatures & stamps go here -->
+          <div class="ink-toolbar">
+            <span>Ink</span>
+            <div class="control-group" aria-label="Ink color">
+              <button
+                data-color="#0f2b48"
+                class="quick-color-btn"
+                style="--swatch: #0f2b48"
+                aria-label="Navy ink"
+                aria-pressed="true"
+              ></button
+              ><button
+                data-color="#111827"
+                class="quick-color-btn"
+                style="--swatch: #111827"
+                aria-label="Black ink"
+                aria-pressed="false"
+              ></button
+              ><button
+                data-color="#1d4ed8"
+                class="quick-color-btn"
+                style="--swatch: #1d4ed8"
+                aria-label="Blue ink"
+                aria-pressed="false"
+              ></button>
             </div>
+            <span class="helper">For drawing and typed signatures</span>
           </div>
-
         </div>
-
-      </div>
-
+        <aside class="output-panel" aria-label="Signature actions">
+          <p class="eyebrow">READY WHEN YOU ARE</p>
+          <h2>Put it to use.</h2>
+          <p>
+            Download a transparent image for your documents, or sign a PDF here.
+          </p>
+          <button id="hero-download-png-btn" class="primary">
+            Download PNG <span aria-hidden="true">↓</span></button
+          ><button id="hero-use-on-doc-btn" class="secondary">
+            Use on a document <span aria-hidden="true">→</span>
+          </button>
+          <div class="secondary-actions">
+            <button id="hero-save-btn">Save signature</button
+            ><button id="hero-copy-btn">Copy image</button>
+          </div>
+          <p class="storage-note">
+            Save only on a device you trust. Saved signatures stay in this
+            browser until you delete them.
+          </p>
+        </aside>
+      </section>
+      <footer class="workspace-footer">
+        <span>Files are processed in your browser.</span
+        ><span>No account. No document uploads to a server.</span>
+      </footer>
     </main>
 
-  </div>
+    <main id="view-doc-signer" class="document-view hidden" tabindex="-1">
+      <div class="document-heading">
+        <div>
+          <p class="eyebrow">DOCUMENT WORKSPACE</p>
+          <h1>Sign, then send.</h1>
+        </div>
+        <div id="doc-header-actions" class="hidden control-group">
+          <button id="clear-all-doc-btn">Close document</button
+          ><button id="export-modal-trigger" class="primary">
+            Download document
+          </button>
+        </div>
+      </div>
+      <input
+        type="file"
+        id="file-upload-input"
+        accept="application/pdf,image/png,image/jpeg,image/webp"
+        hidden
+      />
+      <div id="empty-state">
+        <div id="drop-zone">
+          <span class="document-symbol" aria-hidden="true">↥</span>
+          <h2>Start with a document</h2>
+          <p>Drop a PDF or image here to add your signature.</p>
+          <button
+            class="primary"
+            onclick="document.getElementById('file-upload-input').click()"
+          >
+            Choose document
+          </button>
+          <p class="helper">PDF, PNG, JPG, or WebP</p>
+        </div>
+        <div class="sample-row">
+          <span>Just trying it out?</span
+          ><button data-template="nda" class="template-card-btn">
+            Open a sample document →
+          </button>
+        </div>
+        <p class="legal-note">
+          Adds visible signatures and text. Not a cryptographic digital
+          signature or identity verification service.
+        </p>
+      </div>
+      <div id="doc-workspace" class="hidden">
+        <aside id="tools-sidebar">
+          <h2>Add to document</h2>
+          <div class="document-tools">
+            <button id="tool-signature-btn">Signature</button
+            ><button id="tool-initials-btn">Initials</button
+            ><button id="tool-date-btn">Date</button
+            ><button id="tool-name-btn">Name</button
+            ><button id="tool-text-btn">Text</button>
+          </div>
+          <button id="back-to-quick-sig-btn" class="text-button">
+            Edit signature →
+          </button>
+          <div class="pages-section">
+            <h2>Pages</h2>
+            <div id="page-thumbnails"></div>
+          </div>
+          <p class="helper">
+            Drag to move. Use the corner to resize. Arrow keys move a focused
+            field; Shift + arrows resize it.
+          </p>
+          <button
+            class="secondary"
+            onclick="document.getElementById('file-upload-input').click()"
+          >
+            Replace document
+          </button>
+        </aside>
+        <section class="document-stage" aria-label="Document preview">
+          <div class="document-controls">
+            <div class="control-group">
+              <button id="prev-page-btn" aria-label="Previous page">←</button
+              ><span id="page-indicator">Page 1 of 1</span
+              ><button id="next-page-btn" aria-label="Next page">→</button>
+            </div>
+            <div class="control-group">
+              <button id="zoom-out-btn" aria-label="Zoom out">−</button
+              ><span id="zoom-level-text">100%</span
+              ><button id="zoom-in-btn" aria-label="Zoom in">+</button
+              ><button id="zoom-fit-btn">Fit</button>
+            </div>
+          </div>
+          <div id="document-filename" class="document-filename"></div>
+          <div id="doc-scroll-viewport">
+            <div id="doc-page-container">
+              <canvas id="doc-canvas" aria-label="Document page"></canvas>
+              <div id="overlay-layer"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
 
-  <!-- EXPORT & FINISH MODAL -->
-  <div id="export-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-subtle-scale">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="font-bold text-base text-slate-900">Export Signed Document</h3>
-        <button id="close-export-modal-btn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    <dialog id="export-modal" aria-labelledby="export-title">
+      <div class="dialog-heading">
+        <h2 id="export-title">Download document</h2>
+        <button id="close-export-modal-btn" aria-label="Close download dialog">
+          ✕
         </button>
       </div>
-
-      <div class="p-5 space-y-4">
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
-          <div class="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-lg flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          </div>
-          <div class="overflow-hidden">
-            <div id="export-doc-name" class="font-bold text-xs text-slate-800 truncate">document.pdf</div>
-            <div id="export-elements-count" class="text-[11px] text-slate-500">2 signatures placed</div>
-          </div>
-        </div>
-
-        <!-- Audit Trail Checkbox -->
-        <label class="flex items-start gap-2.5 p-3 rounded-xl border border-indigo-100 bg-indigo-50/40 cursor-pointer hover:bg-indigo-50/70 transition">
-          <input type="checkbox" id="export-audit-trail-chk" checked class="mt-0.5 rounded text-indigo-600 focus:ring-indigo-500" />
-          <div>
-            <div class="text-xs font-bold text-indigo-950">Append Tamper-Evident Audit Certificate</div>
-            <div class="text-[11px] text-indigo-700 mt-0.5">Adds a DocuSign-style completion page with SHA-256 digital fingerprint, signing timestamps, and tamper-evident seal.</div>
-          </div>
-        </label>
-
-        <!-- Actions -->
-        <div class="space-y-2 pt-2">
-          <button id="download-signed-pdf-btn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span>Download Signed PDF</span>
-          </button>
-
-          <button id="download-page-img-btn" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-2">
-            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            <span>Download Active Page as PNG Image</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Notification Container -->
-  <div id="toast-container" class="toast-container"></div>
-
-  <!-- App Scripts -->
-  <script src="js/signature-pad.js"></script>
-  <script src="js/templates.js"></script>
-  <script src="js/pdf-handler.js"></script>
-  <script src="js/app.js"></script>
-
-</body>
+      <p id="export-doc-name"></p>
+      <p id="export-elements-count" class="helper"></p>
+      <p class="legal-note">
+        Your signature and fields will be embedded in the file. This does not
+        certify identity or protect the PDF from later changes.
+      </p>
+      <button id="download-signed-pdf-btn" class="primary">Download PDF</button
+      ><button id="download-page-img-btn" class="secondary">
+        Download this page as PNG
+      </button>
+    </dialog>
+    <div
+      id="toast-container"
+      class="toast-container"
+      role="status"
+      aria-live="polite"
+      aria-atomic="false"
+    ></div>
+  </body>
 </html>

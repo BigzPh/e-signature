@@ -7,13 +7,13 @@
 class SignaturePadEngine {
   constructor(canvas, options = {}) {
     this.canvas = canvas;
-    this.ctx = canvas.getContext('2d', { willReadFrequently: true });
+    this.ctx = canvas.getContext("2d", { willReadFrequently: true });
     this.options = {
-      color: options.color || '#0f2b48',
+      color: options.color || "#0f2b48",
       strokeWidth: options.strokeWidth || 2.5,
       smoothing: options.smoothing !== undefined ? options.smoothing : true,
       eraser: false,
-      ...options
+      ...options,
     };
 
     this.points = [];
@@ -37,16 +37,16 @@ class SignaturePadEngine {
     this.canvas.style.height = `${height}px`;
 
     this.ctx.scale(this.dpr, this.dpr);
-    this.ctx.lineCap = 'round';
-    this.ctx.lineJoin = 'round';
+    this.ctx.lineCap = "round";
+    this.ctx.lineJoin = "round";
     this.saveState();
   }
 
   resize() {
-    const tempCanvas = document.createElement('canvas');
+    const tempCanvas = document.createElement("canvas");
     tempCanvas.width = this.canvas.width;
     tempCanvas.height = this.canvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
+    const tempCtx = tempCanvas.getContext("2d");
     tempCtx.drawImage(this.canvas, 0, 0);
 
     const rect = this.canvas.getBoundingClientRect();
@@ -59,8 +59,8 @@ class SignaturePadEngine {
     this.canvas.style.height = `${height}px`;
 
     this.ctx.scale(this.dpr, this.dpr);
-    this.ctx.lineCap = 'round';
-    this.ctx.lineJoin = 'round';
+    this.ctx.lineCap = "round";
+    this.ctx.lineJoin = "round";
     this.ctx.drawImage(tempCanvas, 0, 0, width, height);
   }
 
@@ -70,11 +70,11 @@ class SignaturePadEngine {
       return {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
-        time: Date.now()
+        time: Date.now(),
       };
     };
 
-    this.canvas.addEventListener('pointerdown', (e) => {
+    this.canvas.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       this.canvas.setPointerCapture(e.pointerId);
       this.isDrawing = true;
@@ -82,7 +82,7 @@ class SignaturePadEngine {
       this.redoStack = [];
     });
 
-    this.canvas.addEventListener('pointermove', (e) => {
+    this.canvas.addEventListener("pointermove", (e) => {
       if (!this.isDrawing) return;
       e.preventDefault();
       const pt = getPos(e);
@@ -99,8 +99,12 @@ class SignaturePadEngine {
       if (this.points.length === 1) {
         // Draw single dot
         const pt = this.points[0];
-        this.ctx.fillStyle = this.options.eraser ? 'rgba(0,0,0,1)' : this.options.color;
-        this.ctx.globalCompositeOperation = this.options.eraser ? 'destination-out' : 'source-over';
+        this.ctx.fillStyle = this.options.eraser
+          ? "rgba(0,0,0,1)"
+          : this.options.color;
+        this.ctx.globalCompositeOperation = this.options.eraser
+          ? "destination-out"
+          : "source-over";
         this.ctx.beginPath();
         this.ctx.arc(pt.x, pt.y, this.options.strokeWidth, 0, Math.PI * 2);
         this.ctx.fill();
@@ -109,9 +113,9 @@ class SignaturePadEngine {
       this.saveState();
     };
 
-    this.canvas.addEventListener('pointerup', stopDrawing);
-    this.canvas.addEventListener('pointercancel', stopDrawing);
-    this.canvas.addEventListener('pointerleave', stopDrawing);
+    this.canvas.addEventListener("pointerup", stopDrawing);
+    this.canvas.addEventListener("pointercancel", stopDrawing);
+    this.canvas.addEventListener("pointerleave", stopDrawing);
   }
 
   drawCurve() {
@@ -129,14 +133,21 @@ class SignaturePadEngine {
     // Smooth stroke width: faster = slightly thinner, slower = richer ink
     const targetWidth = Math.max(
       this.options.strokeWidth * 0.65,
-      Math.min(this.options.strokeWidth * 1.35, this.options.strokeWidth * (1.2 - speed * 0.2))
+      Math.min(
+        this.options.strokeWidth * 1.35,
+        this.options.strokeWidth * (1.2 - speed * 0.2),
+      ),
     );
 
     const mid1 = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
     const mid2 = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
 
-    this.ctx.globalCompositeOperation = this.options.eraser ? 'destination-out' : 'source-over';
-    this.ctx.strokeStyle = this.options.eraser ? 'rgba(0,0,0,1)' : this.options.color;
+    this.ctx.globalCompositeOperation = this.options.eraser
+      ? "destination-out"
+      : "source-over";
+    this.ctx.strokeStyle = this.options.eraser
+      ? "rgba(0,0,0,1)"
+      : this.options.color;
     this.ctx.lineWidth = targetWidth;
 
     this.ctx.beginPath();
@@ -150,7 +161,12 @@ class SignaturePadEngine {
     if (this.history.length >= 25) {
       this.history.shift();
     }
-    const state = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+    const state = this.ctx.getImageData(
+      0,
+      0,
+      this.canvas.width,
+      this.canvas.height,
+    );
     this.history.push(state);
   }
 
@@ -176,7 +192,12 @@ class SignaturePadEngine {
   }
 
   clear() {
-    this.ctx.clearRect(0, 0, this.canvas.width / this.dpr, this.canvas.height / this.dpr);
+    this.ctx.clearRect(
+      0,
+      0,
+      this.canvas.width / this.dpr,
+      this.canvas.height / this.dpr,
+    );
     this.history = [];
     this.redoStack = [];
     this.saveState();
@@ -184,9 +205,10 @@ class SignaturePadEngine {
 
   isEmpty() {
     const pixelBuffer = new Uint32Array(
-      this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data.buffer
+      this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data
+        .buffer,
     );
-    return !pixelBuffer.some(color => color !== 0);
+    return !pixelBuffer.some((color) => color !== 0);
   }
 
   setColor(color) {
@@ -245,21 +267,27 @@ class SignaturePadEngine {
     const cropW = maxX - minX;
     const cropH = maxY - minY;
 
-    const trimmedCanvas = document.createElement('canvas');
+    const trimmedCanvas = document.createElement("canvas");
     trimmedCanvas.width = cropW;
     trimmedCanvas.height = cropH;
-    const trimmedCtx = trimmedCanvas.getContext('2d');
+    const trimmedCtx = trimmedCanvas.getContext("2d");
 
     trimmedCtx.drawImage(
       this.canvas,
-      minX, minY, cropW, cropH,
-      0, 0, cropW, cropH
+      minX,
+      minY,
+      cropW,
+      cropH,
+      0,
+      0,
+      cropW,
+      cropH,
     );
 
     return trimmedCanvas;
   }
 
-  toDataURL(type = 'image/png') {
+  toDataURL(type = "image/png") {
     const trimmed = this.getTrimmedCanvas();
     return trimmed ? trimmed.toDataURL(type) : null;
   }
@@ -271,15 +299,15 @@ class SignaturePadEngine {
 class TypeSignatureGenerator {
   static generate({
     text,
-    fontFamily = 'Caveat',
-    color = '#0f2b48',
+    fontFamily = "Caveat",
+    color = "#0f2b48",
     fontSize = 64,
-    padding = 20
+    padding = 20,
   }) {
-    if (!text || text.trim() === '') return null;
+    if (!text || text.trim() === "") return null;
 
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
     // Preliminary size
     canvas.width = 1200;
@@ -287,7 +315,7 @@ class TypeSignatureGenerator {
 
     ctx.font = `${fontSize}px "${fontFamily}", cursive, sans-serif`;
     ctx.fillStyle = color;
-    ctx.textBaseline = 'middle';
+    ctx.textBaseline = "middle";
 
     const metrics = ctx.measureText(text);
     const textWidth = Math.ceil(metrics.width);
@@ -299,10 +327,10 @@ class TypeSignatureGenerator {
 
     ctx.font = `${fontSize}px "${fontFamily}", cursive, sans-serif`;
     ctx.fillStyle = color;
-    ctx.textBaseline = 'middle';
+    ctx.textBaseline = "middle";
     ctx.fillText(text, padding, canvas.height / 2);
 
-    return canvas.toDataURL('image/png');
+    return canvas.toDataURL("image/png");
   }
 }
 
@@ -316,10 +344,11 @@ class UploadSignatureProcessor {
   static processImage(imageElement, options = {}) {
     const threshold = options.threshold !== undefined ? options.threshold : 215;
     const inkColor = options.inkColor || null; // Optional ink replacement
-    const enhanceContrast = options.enhanceContrast !== undefined ? options.enhanceContrast : true;
+    const enhanceContrast =
+      options.enhanceContrast !== undefined ? options.enhanceContrast : true;
 
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     canvas.width = imageElement.naturalWidth || imageElement.width;
     canvas.height = imageElement.naturalHeight || imageElement.height;
 
@@ -327,10 +356,15 @@ class UploadSignatureProcessor {
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imgData.data;
 
-    let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+    let minX = canvas.width,
+      minY = canvas.height,
+      maxX = 0,
+      maxY = 0;
     let hasInk = false;
 
     for (let i = 0; i < data.length; i += 4) {
+      const originalAlpha = data[i + 3];
+      if (originalAlpha === 0) continue;
       const r = data[i];
       const g = data[i + 1];
       const b = data[i + 2];
@@ -343,15 +377,18 @@ class UploadSignatureProcessor {
         // Pixel is ink
         hasInk = true;
         const x = (i / 4) % canvas.width;
-        const y = Math.floor((i / 4) / canvas.width);
+        const y = Math.floor(i / 4 / canvas.width);
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
         if (y < minY) minY = y;
         if (y > maxY) maxY = y;
 
         // Smooth alpha edge falloff
-        const alphaFactor = Math.max(0, Math.min(1, (threshold - brightness) / 35));
-        data[i + 3] = Math.round(alphaFactor * 255);
+        const alphaFactor = Math.max(
+          0,
+          Math.min(1, (threshold - brightness) / 35),
+        );
+        data[i + 3] = Math.round(alphaFactor * originalAlpha);
 
         if (inkColor) {
           data[i] = inkColor.r;
@@ -379,15 +416,25 @@ class UploadSignatureProcessor {
       const cropW = maxX - minX;
       const cropH = maxY - minY;
 
-      const croppedCanvas = document.createElement('canvas');
+      const croppedCanvas = document.createElement("canvas");
       croppedCanvas.width = cropW;
       croppedCanvas.height = cropH;
-      const croppedCtx = croppedCanvas.getContext('2d');
-      croppedCtx.drawImage(canvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
-      return croppedCanvas.toDataURL('image/png');
+      const croppedCtx = croppedCanvas.getContext("2d");
+      croppedCtx.drawImage(
+        canvas,
+        minX,
+        minY,
+        cropW,
+        cropH,
+        0,
+        0,
+        cropW,
+        cropH,
+      );
+      return croppedCanvas.toDataURL("image/png");
     }
 
-    return canvas.toDataURL('image/png');
+    return canvas.toDataURL("image/png");
   }
 }
 
@@ -395,27 +442,27 @@ class UploadSignatureProcessor {
  * Saved Signatures LocalStorage Manager
  */
 class SavedSignaturesManager {
-  static STORAGE_KEY = 'e_signature_saved_items_v1';
+  static STORAGE_KEY = "e_signature_saved_items_v1";
 
   static getSignatures() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY);
       return data ? JSON.parse(data) : [];
     } catch (e) {
-      console.warn('Could not read saved signatures:', e);
+      console.warn("Could not read saved signatures:", e);
       return [];
     }
   }
 
-  static saveSignature(dataUrl, type = 'signature', title = 'My Signature') {
+  static saveSignature(dataUrl, type = "signature", title = "My Signature") {
     try {
       const list = this.getSignatures();
       const newItem = {
-        id: 'sig_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        id: "sig_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
         dataUrl,
         type,
         title,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
       // Keep up to 10 signatures
       list.unshift(newItem);
@@ -423,14 +470,14 @@ class SavedSignaturesManager {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(list));
       return newItem;
     } catch (e) {
-      console.warn('Could not save signature:', e);
+      console.warn("Could not save signature:", e);
       return null;
     }
   }
 
   static deleteSignature(id) {
     try {
-      const list = this.getSignatures().filter(item => item.id !== id);
+      const list = this.getSignatures().filter((item) => item.id !== id);
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(list));
       return true;
     } catch (e) {
