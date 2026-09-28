@@ -1,5 +1,5 @@
 /**
- * Main Application Logic for E-Signature Web App (SignFlow)
+ * Main Application Logic for E-Signature Web App (Kakaw E Signiture)
  * Spotlights the Quick Signature Studio as the primary centerpiece,
  * with full seamless transition into the Document Signer.
  */
