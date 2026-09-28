@@ -6,7 +6,8 @@
   --primary-light: #eef2ff;
   --accent: #06b6d4;
   --ink-black: #111827;
-  --ink-blue: #1e3a8a;
+  --ink-navy: #0f2b48;
+  --ink-blue: #1d4ed8;
   --ink-crimson: #991b1b;
   --ink-forest: #166534;
 }
@@ -28,6 +29,31 @@ body {
     linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
   background-size: 16px 16px;
   background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+/* Signature baseline guideline on canvas */
+.sig-canvas-container::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 35%;
+  height: 1px;
+  border-bottom: 1.5px dashed #cbd5e1;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.sig-canvas-container::before {
+  content: '✕';
+  position: absolute;
+  left: 6%;
+  bottom: 31%;
+  font-size: 14px;
+  font-weight: 700;
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 5;
 }
 
 /* Custom Scrollbars */
@@ -111,7 +137,6 @@ body {
   color: white;
   border-radius: 8px;
   padding: 3px 6px;
-  display: none;
   align-items: center;
   gap: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -123,26 +148,13 @@ body {
   display: flex;
 }
 
-/* Ripple & pulse animation */
-@keyframes subtle-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(1.02); }
+/* Button glow effect */
+.btn-glow {
+  box-shadow: 0 0 20px -3px rgba(79, 70, 229, 0.4);
 }
 
-.animate-subtle-pulse {
-  animation: subtle-pulse 3s infinite ease-in-out;
-}
-
-/* Stamp styles */
-.stamp-seal {
-  border: 3px double;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 800;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
+.btn-glow:hover {
+  box-shadow: 0 0 25px 0px rgba(79, 70, 229, 0.55);
 }
 
 /* Toast notifications */

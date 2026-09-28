@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SignFlow — Fast, Free & Private E-Signature</title>
-  <meta name="description" content="Sign PDF and image documents online securely. 100% client-side privacy, smooth drawing, cursive typing, and audit trail certificates.">
+  <title>SignFlow — Quick Digital Signature & E-Sign Suite</title>
+  <meta name="description" content="Create, copy, and download your digital signature in seconds. Transparent PNG, smooth drawing, cursive typing, and client-side PDF document signing.">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Caveat:wght@600&family=Dancing+Script:wght@600&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Pacifico&family=Sacramento&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Caveat:wght@600&family=Dancing+Script:wght@600&family=Great+Vibes&family=Inter:wght@400;500;600;700;800&family=Pacifico&family=Sacramento&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -39,53 +39,55 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-slate-100 text-slate-800 flex flex-col h-screen overflow-hidden select-none font-sans">
+<body class="bg-slate-900 text-slate-800 flex flex-col h-screen overflow-hidden font-sans">
 
   <!-- Top Navigation Bar -->
-  <header class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shadow-sm z-30 shrink-0">
+  <header class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shadow-xs z-30 shrink-0">
     <div class="flex items-center gap-3">
       <!-- App Brand Logo -->
-      <div class="flex items-center gap-2">
-        <div class="w-9 h-9 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-100">
+      <a href="#" id="brand-logo-btn" class="flex items-center gap-2.5 group">
+        <div class="w-9 h-9 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-100 group-hover:scale-105 transition-transform">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
           </svg>
         </div>
         <div>
-          <span class="font-bold text-lg text-slate-900 tracking-tight flex items-center gap-1.5">
-            SignFlow <span class="text-[10px] uppercase font-semibold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200">Free</span>
+          <span class="font-extrabold text-lg text-slate-900 tracking-tight flex items-center gap-1.5">
+            SignFlow <span class="text-[10px] uppercase font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200">Free</span>
           </span>
         </div>
-      </div>
+      </a>
+    </div>
 
-      <div class="h-5 w-px bg-slate-200 mx-2 hidden sm:block"></div>
+    <!-- Center Mode Switcher Tabs (Quick Signature Highlighted) -->
+    <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
+      <button id="nav-mode-quick" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 bg-white text-indigo-700 shadow-sm">
+        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+        </svg>
+        <span>Quick Signature Studio</span>
+        <span class="hidden sm:inline-block text-[9px] bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-semibold uppercase tracking-wider">Highlight</span>
+      </button>
 
-      <!-- Editable Document Title -->
-      <div class="hidden sm:flex items-center gap-2">
-        <input type="text" id="doc-title" value="Untitled Document" 
-               class="font-medium text-slate-700 hover:bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500 rounded px-2 py-1 text-sm border border-transparent hover:border-slate-200 transition outline-none max-w-xs" />
-      </div>
+      <button id="nav-mode-doc" class="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60">
+        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <span>Sign Document (PDF)</span>
+      </button>
     </div>
 
     <!-- Right Header Actions -->
     <div class="flex items-center gap-2.5">
       <!-- Privacy Badge -->
-      <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-xs text-emerald-800 font-medium">
+      <div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-xs text-emerald-800 font-medium">
         <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
         </svg>
-        <span>100% Client-Side Private</span>
+        <span>100% In-Browser Private</span>
       </div>
 
-      <!-- Quick Draw / Standalone Signature Pad Button -->
-      <button id="quick-sign-btn" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-1.5">
-        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-        </svg>
-        <span>Quick Signature Only</span>
-      </button>
-
-      <!-- Document Actions (Active when doc loaded) -->
+      <!-- Document Specific Actions (Active when in document mode with doc loaded) -->
       <div id="doc-header-actions" class="hidden flex items-center gap-2">
         <button id="clear-all-doc-btn" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
           Clear
@@ -94,21 +96,320 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
-          <span>Download & Finish</span>
+          <span>Finish & Download</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Body Layout -->
-  <div class="flex-1 flex overflow-hidden">
+  <!-- ========================================================
+       SECTION 1: QUICK SIGNATURE STUDIO (PRIMARY HIGHLIGHT)
+       ======================================================== -->
+  <main id="view-quick-signature" class="flex-1 overflow-y-auto bg-gradient-to-b from-slate-50 via-slate-100 to-indigo-50/40 p-4 sm:p-6 lg:p-8 flex flex-col items-center">
+    
+    <div class="w-full max-w-4xl space-y-6">
+
+      <!-- Hero Header -->
+      <div class="text-center space-y-2 pt-2 pb-1">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100/80 border border-indigo-200/80 text-indigo-800 text-xs font-bold tracking-wide shadow-xs">
+          <span>✨</span>
+          <span>Instant Signature Creator • Free & Private</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          Create & Download Your Signature
+        </h1>
+        <p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
+          Draw smoothly with realistic fountain-pen ink, type in elegant calligraphy styles, or clean up a paper snapshot. Download transparent PNGs or copy to clipboard in 1 click.
+        </p>
+      </div>
+
+      <!-- Main Signature Studio Card -->
+      <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden flex flex-col transition-all">
+        
+        <!-- Studio Mode Selector Tabs -->
+        <div class="flex items-center border-b border-slate-100 bg-slate-50/80 px-4 sm:px-6 gap-2 sm:gap-6 text-sm font-semibold overflow-x-auto">
+          <button data-quick-tab="draw" class="quick-tab-btn py-3.5 px-2 border-b-2 border-indigo-600 text-indigo-600 font-bold active flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+            <span>Draw Signature</span>
+          </button>
+          
+          <button data-quick-tab="type" class="quick-tab-btn py-3.5 px-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+            <span>Type Cursive</span>
+          </button>
+
+          <button data-quick-tab="upload" class="quick-tab-btn py-3.5 px-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span>Scan / Photo Cleaner</span>
+          </button>
+
+          <button data-quick-tab="saved" class="quick-tab-btn py-3.5 px-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+            <span>Saved Signatures</span>
+          </button>
+        </div>
+
+        <!-- Studio Body -->
+        <div class="p-4 sm:p-6">
+          
+          <!-- TAB 1: DRAW SIGNATURE -->
+          <div id="quick-tab-draw" class="quick-tab-panel space-y-4">
+            <!-- Canvas with baseline guide & checkered background -->
+            <div class="relative sig-canvas-container rounded-2xl border-2 border-dashed border-slate-300 bg-checkered overflow-hidden shadow-inner flex items-center justify-center">
+              <canvas id="hero-signature-canvas" class="w-full h-64 sm:h-72 cursor-pen touch-none block"></canvas>
+              
+              <div class="absolute bottom-2.5 right-3 text-[11px] text-slate-400 bg-white/70 backdrop-blur px-2 py-0.5 rounded pointer-events-none select-none">
+                Draw with mouse, trackpad, finger, or stylus
+              </div>
+            </div>
+
+            <!-- Drawing Controls Toolbar -->
+            <div class="flex items-center justify-between flex-wrap gap-3 pt-1">
+              
+              <!-- Ink Color Swatches -->
+              <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                <span class="text-xs font-semibold text-slate-600 ml-1.5 mr-1">Ink Color:</span>
+                <button data-color="#0f2b48" class="quick-color-btn w-6 h-6 rounded-full bg-[#0f2b48] ring-2 ring-offset-2 ring-indigo-500 transition shadow-xs" title="Dark Navy"></button>
+                <button data-color="#111827" class="quick-color-btn w-6 h-6 rounded-full bg-[#111827] transition shadow-xs" title="Charcoal Black"></button>
+                <button data-color="#1d4ed8" class="quick-color-btn w-6 h-6 rounded-full bg-[#1d4ed8] transition shadow-xs" title="Royal Blue"></button>
+                <button data-color="#991b1b" class="quick-color-btn w-6 h-6 rounded-full bg-[#991b1b] transition shadow-xs" title="Crimson"></button>
+                <button data-color="#166534" class="quick-color-btn w-6 h-6 rounded-full bg-[#166534] transition shadow-xs" title="Forest Green"></button>
+              </div>
+
+              <!-- Stroke Width & Tools -->
+              <div class="flex items-center gap-2">
+                <div class="flex items-center bg-slate-50 rounded-xl border border-slate-200 p-1">
+                  <span class="text-xs text-slate-500 font-medium px-2">Pen:</span>
+                  <select id="hero-pen-width-select" class="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 outline-none">
+                    <option value="1.6">Fine (1.6px)</option>
+                    <option value="2.6" selected>Medium (2.6px)</option>
+                    <option value="4.2">Bold (4.2px)</option>
+                  </select>
+                </div>
+
+                <button id="hero-eraser-btn" class="px-3 py-1.5 text-xs font-semibold border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-700 transition flex items-center gap-1.5" title="Eraser">
+                  <span>🧹</span> <span>Eraser</span>
+                </button>
+
+                <button id="hero-undo-btn" class="px-3 py-1.5 text-xs font-semibold border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-700 transition flex items-center gap-1" title="Undo (Ctrl+Z)">
+                  <span>↺</span> <span>Undo</span>
+                </button>
+
+                <button id="hero-clear-btn" class="px-3 py-1.5 text-xs font-semibold border border-slate-200 hover:bg-rose-50 text-rose-600 rounded-xl transition" title="Clear Canvas">
+                  Clear
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- TAB 2: TYPE CURSIVE -->
+          <div id="quick-tab-type" class="quick-tab-panel hidden space-y-4">
+            <div class="space-y-1">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Type Your Name</label>
+              <input type="text" id="hero-type-input" value="Alex Morgan" placeholder="Enter your full name or initials..."
+                     class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-base font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" />
+            </div>
+
+            <!-- Cursive Style Selection Grid -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Select Calligraphy Style</label>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="hero-font-cards-grid">
+                
+                <button data-font="Caveat" class="font-card-btn active p-3 bg-white border-2 border-indigo-600 rounded-2xl text-left hover:shadow-md transition">
+                  <span class="text-[10px] font-bold text-indigo-600 uppercase">Caveat</span>
+                  <div class="font-caveat text-3xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
+                </button>
+
+                <button data-font="Dancing Script" class="font-card-btn p-3 bg-white border-2 border-slate-200 rounded-2xl text-left hover:border-indigo-400 hover:shadow-md transition">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase">Dancing Script</span>
+                  <div class="font-dancing text-2xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
+                </button>
+
+                <button data-font="Great Vibes" class="font-card-btn p-3 bg-white border-2 border-slate-200 rounded-2xl text-left hover:border-indigo-400 hover:shadow-md transition">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase">Great Vibes</span>
+                  <div class="font-vibes text-2xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
+                </button>
+
+                <button data-font="Sacramento" class="font-card-btn p-3 bg-white border-2 border-slate-200 rounded-2xl text-left hover:border-indigo-400 hover:shadow-md transition">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase">Sacramento</span>
+                  <div class="font-sacramento text-2xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
+                </button>
+
+                <button data-font="Alex Brush" class="font-card-btn p-3 bg-white border-2 border-slate-200 rounded-2xl text-left hover:border-indigo-400 hover:shadow-md transition">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase">Alex Brush</span>
+                  <div class="font-alex text-2xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
+                </button>
+
+                <button data-font="Pacifico" class="font-card-btn p-3 bg-white border-2 border-slate-200 rounded-2xl text-left hover:border-indigo-400 hover:shadow-md transition">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase">Pacifico</span>
+                  <div class="font-pacifico text-2xl text-slate-800 truncate mt-1 preview-name">Alex Morgan</div>
+                </button>
+
+              </div>
+            </div>
+
+            <!-- Preview Display Box -->
+            <div class="p-6 bg-checkered rounded-2xl border border-slate-200 flex items-center justify-center min-h-[140px]">
+              <img id="hero-type-preview-img" class="max-h-24 object-contain" alt="Typed signature preview" />
+            </div>
+          </div>
+
+          <!-- TAB 3: UPLOAD & CLEAN PHOTO -->
+          <div id="quick-tab-upload" class="quick-tab-panel hidden space-y-4">
+            
+            <div class="border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-2xl p-6 text-center cursor-pointer bg-slate-50 transition" onclick="document.getElementById('hero-upload-input').click()">
+              <input type="file" id="hero-upload-input" accept="image/*" class="hidden" />
+              <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <div class="text-sm font-bold text-slate-800">Upload signature photo or scan</div>
+              <p class="text-xs text-slate-500 mt-1">Take a photo of your signature on white paper. Our AI algorithm cleans the paper background.</p>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between text-xs font-semibold text-slate-700">
+                <span>Background Transparency Sensitivity</span>
+                <span id="threshold-val-text" class="text-indigo-600">Level 215</span>
+              </div>
+              <input type="range" id="hero-upload-slider" min="140" max="250" value="215" class="w-full accent-indigo-600 cursor-pointer" />
+            </div>
+
+            <div class="p-6 bg-checkered rounded-2xl border border-slate-200 flex items-center justify-center min-h-[140px]">
+              <img id="hero-upload-preview-img" class="max-h-24 object-contain" alt="Cleaned signature preview" />
+            </div>
+
+          </div>
+
+          <!-- TAB 4: SAVED SIGNATURES -->
+          <div id="quick-tab-saved" class="quick-tab-panel hidden space-y-3">
+            <div id="hero-saved-list" class="grid grid-cols-2 sm:grid-cols-3 gap-3 min-h-[180px]">
+              <!-- Dynamically populated from localStorage -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- HIGHLIGHT ACTION BAR (The Main Output Controls) -->
+        <div class="bg-gradient-to-r from-slate-50 via-indigo-50/30 to-slate-50 border-t border-slate-200/80 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          
+          <!-- Secondary Actions (Left) -->
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button id="hero-copy-btn" class="flex-1 sm:flex-initial px-4 py-2.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 border border-slate-200 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+              </svg>
+              <span>Copy to Clipboard</span>
+            </button>
+
+            <button id="hero-save-btn" class="px-3.5 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-xs transition flex items-center gap-1.5" title="Save signature to browser for future use">
+              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+              <span>Save</span>
+            </button>
+          </div>
+
+          <!-- Highlight Primary Actions (Right) -->
+          <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            <!-- Sign Document With This -->
+            <button id="hero-use-on-doc-btn" class="flex-1 sm:flex-initial px-4 py-2.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition flex items-center justify-center gap-1.5">
+              <span>Sign a Document with this</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+
+            <!-- Prominent Download PNG Button -->
+            <button id="hero-download-png-btn" class="flex-1 sm:flex-initial px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 rounded-xl shadow-md btn-glow transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              <span class="tracking-wide">Download Transparent PNG</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Feature Grid Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-800">Transparent PNG</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Auto-trimmed borders. Cleanly inserts into Word, Docs & emails.</div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-800">100% Client-Side</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">No cloud uploads. Your signature never leaves your device.</div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-800">Smooth Ink Dynamics</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Velocity-sensitive bezier curves simulate real ballpoint & fountain pens.</div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-800">Mobile & Stylus Ready</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Sign with your finger or Apple Pencil on any tablet or smartphone.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jump to Document Signer Banner -->
+      <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-5 rounded-3xl shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="space-y-1 text-center sm:text-left">
+          <div class="font-extrabold text-sm sm:text-base flex items-center justify-center sm:justify-start gap-2">
+            <span>📄</span> <span>Need to sign a full PDF contract or agreement?</span>
+          </div>
+          <p class="text-xs text-slate-300">
+            Upload your document or test with our sample agreements, place signatures & stamps, and export with an audit certificate.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="hero-open-doc-btn" class="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5">
+            <span>Open Document Signer</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- ========================================================
+       SECTION 2: FULL DOCUMENT SIGNER WORKSPACE
+       ======================================================== -->
+  <div id="view-doc-signer" class="hidden flex-1 flex overflow-hidden">
 
     <!-- Left Tools & Signer Sidebar -->
-    <aside id="tools-sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 opacity-50 pointer-events-none transition-all duration-200">
+    <aside id="tools-sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 transition-all duration-200">
       
       <!-- Field Tools Header -->
-      <div class="p-3 border-b border-slate-100">
+      <div class="p-3 border-b border-slate-100 flex items-center justify-between">
         <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Signing Fields</h2>
+        <button id="back-to-quick-sig-btn" class="text-xs text-indigo-600 hover:underline font-semibold">
+          ← Quick Studio
+        </button>
       </div>
 
       <!-- Action Tool Buttons -->
@@ -122,7 +423,7 @@
           </div>
           <div>
             <div class="text-xs font-bold text-slate-800 group-hover:text-indigo-950">Add Signature</div>
-            <div class="text-[11px] text-slate-500">Draw, type, or upload</div>
+            <div class="text-[11px] text-slate-500">Stamp active signature</div>
           </div>
         </button>
 
@@ -196,17 +497,17 @@
 
       </div>
 
-      <!-- Sidebar Footer Info -->
+      <!-- Sidebar Footer -->
       <div class="p-3 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
         <span class="flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Ready to sign
         </span>
-        <span class="text-slate-400">v1.0</span>
+        <button onclick="document.getElementById('file-upload-input').click()" class="text-indigo-600 hover:underline font-semibold">Change File</button>
       </div>
     </aside>
 
     <!-- Center Document Stage -->
-    <main class="flex-1 flex flex-col relative bg-slate-200/60 overflow-hidden">
+    <main class="flex-1 flex flex-col relative bg-slate-200/70 overflow-hidden">
 
       <!-- Empty State / Document Upload Screen -->
       <div id="empty-state" class="flex-1 overflow-y-auto flex items-center justify-center p-6">
@@ -234,7 +535,7 @@
                 <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> PDF Documents
               </span>
               <span class="flex items-center gap-1">
-                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> PNG, JPG & WEBP
+                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> PNG & JPG
               </span>
               <span class="flex items-center gap-1">
                 <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 100% In-Browser
@@ -339,189 +640,6 @@
 
     </main>
 
-  </div>
-
-  <!-- SIGNATURE MODAL (Draw, Type, Upload, Saved) -->
-  <div id="signature-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
-    <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-subtle-scale">
-      
-      <!-- Modal Header -->
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 id="sig-modal-title" class="font-bold text-base text-slate-900">Create Signature</h3>
-        <button id="close-sig-modal-btn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <!-- Navigation Tabs -->
-      <div class="flex border-b border-slate-200 px-5 gap-6 text-sm font-semibold">
-        <button data-tab="draw" class="sig-tab-btn py-3 border-b-2 border-indigo-600 text-indigo-600 active">Draw</button>
-        <button data-tab="type" class="sig-tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700">Type</button>
-        <button data-tab="upload" class="sig-tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700">Upload Image</button>
-        <button data-tab="saved" class="sig-tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700">Saved</button>
-      </div>
-
-      <!-- Modal Body -->
-      <div class="p-5 flex-1 overflow-y-auto">
-
-        <!-- TAB 1: DRAW -->
-        <div id="tab-draw" class="sig-tab-content">
-          <!-- Canvas drawing pad -->
-          <div class="relative bg-white rounded-xl border-2 border-dashed border-slate-200 bg-checkered overflow-hidden shadow-inner">
-            <canvas id="signature-canvas" class="w-full h-56 cursor-pen touch-none block"></canvas>
-            
-            <div class="absolute bottom-2 left-3 text-[11px] text-slate-400 pointer-events-none select-none">
-              Sign above using mouse, finger, or stylus
-            </div>
-          </div>
-
-          <!-- Controls under canvas -->
-          <div class="mt-3 flex items-center justify-between flex-wrap gap-2">
-            <!-- Color Swatches -->
-            <div class="flex items-center gap-1.5">
-              <span class="text-xs text-slate-500 font-medium mr-1">Ink:</span>
-              <button data-color="#0f2b48" class="sig-color-btn w-6 h-6 rounded-full bg-[#0f2b48] ring-2 ring-offset-2 ring-indigo-500 transition"></button>
-              <button data-color="#111827" class="sig-color-btn w-6 h-6 rounded-full bg-[#111827] transition"></button>
-              <button data-color="#1e3a8a" class="sig-color-btn w-6 h-6 rounded-full bg-[#1e3a8a] transition"></button>
-              <button data-color="#991b1b" class="sig-color-btn w-6 h-6 rounded-full bg-[#991b1b] transition"></button>
-              <button data-color="#166534" class="sig-color-btn w-6 h-6 rounded-full bg-[#166534] transition"></button>
-            </div>
-
-            <!-- Pen Stroke & Eraser -->
-            <div class="flex items-center gap-2">
-              <select id="pen-width-select" class="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 outline-none">
-                <option value="1.5">Fine</option>
-                <option value="2.5" selected>Medium</option>
-                <option value="4.0">Bold</option>
-              </select>
-
-              <button id="eraser-btn" class="px-2 py-1 text-xs border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-600 transition" title="Toggle Eraser">
-                🧹 Eraser
-              </button>
-
-              <button id="sig-undo-btn" class="px-2 py-1 text-xs border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-600 transition" title="Undo">
-                ↺ Undo
-              </button>
-
-              <button id="sig-clear-btn" class="px-2 py-1 text-xs border border-slate-200 hover:bg-rose-50 text-rose-600 rounded-lg transition" title="Clear Canvas">
-                Clear
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 2: TYPE -->
-        <div id="tab-type" class="sig-tab-content hidden space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Your Full Name</label>
-            <input type="text" id="type-sig-input" placeholder="Type your name..." value="John Doe" 
-                   class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Select Cursive Style</label>
-            <select id="type-font-select" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-              <option value="Caveat">Caveat (Modern Casual)</option>
-              <option value="Dancing Script">Dancing Script (Elegant Flow)</option>
-              <option value="Great Vibes">Great Vibes (Formal Calligraphy)</option>
-              <option value="Sacramento">Sacramento (Sophisticated Monoline)</option>
-              <option value="Alex Brush">Alex Brush (Classic Script)</option>
-              <option value="Pacifico">Pacifico (Bold Brush)</option>
-            </select>
-          </div>
-
-          <div class="p-4 bg-checkered rounded-xl border border-slate-200 flex items-center justify-center min-h-[140px]">
-            <img id="type-sig-preview" class="max-h-24 object-contain" alt="Type preview" />
-          </div>
-        </div>
-
-        <!-- TAB 3: UPLOAD -->
-        <div id="tab-upload" class="sig-tab-content hidden space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Upload Photo of Signature</label>
-            <input type="file" id="upload-sig-input" accept="image/*" 
-                   class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
-            <p class="text-[11px] text-slate-400 mt-1">Upload a photo or scan of your signature on white paper.</p>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between text-xs text-slate-600 mb-1">
-              <span>Paper Transparency Cleaner</span>
-              <span class="font-medium text-slate-400">Threshold filter</span>
-            </div>
-            <input type="range" id="upload-threshold-slider" min="150" max="250" value="215" class="w-full accent-indigo-600" />
-          </div>
-
-          <div class="p-4 bg-checkered rounded-xl border border-slate-200 flex items-center justify-center min-h-[140px]">
-            <img id="upload-sig-preview" class="max-h-24 object-contain" alt="Cleaned signature preview" />
-          </div>
-        </div>
-
-        <!-- TAB 4: SAVED SIGNATURES -->
-        <div id="tab-saved" class="sig-tab-content hidden">
-          <div id="saved-signatures-list" class="grid grid-cols-2 gap-3 min-h-[160px]">
-            <!-- Dynamically populated from localStorage -->
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-        <label class="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
-          <input type="checkbox" id="save-sig-checkbox" checked class="rounded text-indigo-600 focus:ring-indigo-500" />
-          <span>Save signature in browser for reuse</span>
-        </label>
-
-        <button id="apply-signature-btn" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-sm transition">
-          Insert Signature
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- STANDALONE QUICK SIGN MODAL -->
-  <div id="quick-sign-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-subtle-scale">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-        <div>
-          <h3 class="font-bold text-base text-slate-900">Quick Signature Pad</h3>
-          <p class="text-xs text-slate-500">Sign and instantly download transparent PNG</p>
-        </div>
-        <button id="close-quick-sign-btn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <div class="p-5">
-        <div class="relative bg-white rounded-xl border-2 border-dashed border-slate-200 bg-checkered overflow-hidden shadow-inner">
-          <canvas id="quick-sign-canvas" class="w-full h-52 cursor-pen touch-none block"></canvas>
-          <div class="absolute bottom-2 left-3 text-[11px] text-slate-400 pointer-events-none select-none">
-            Sign with finger, stylus, or mouse
-          </div>
-        </div>
-
-        <div class="mt-3 flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <button id="quick-undo-btn" class="px-2.5 py-1 text-xs border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-600">
-              ↺ Undo
-            </button>
-            <button id="quick-clear-btn" class="px-2.5 py-1 text-xs border border-slate-200 hover:bg-rose-50 text-rose-600 rounded-lg">
-              Clear
-            </button>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="quick-copy-clip-btn" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
-              Copy to Clipboard
-            </button>
-            <button id="quick-download-png-btn" class="px-4 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition">
-              Download PNG
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- EXPORT & FINISH MODAL -->

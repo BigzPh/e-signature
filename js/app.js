@@ -1,42 +1,80 @@
 /**
- * Main Application Logic for E-Signature Web App
+ * Main Application Logic for E-Signature Web App (SignFlow)
+ * Spotlights the Quick Signature Studio as the primary centerpiece,
+ * with full seamless transition into the Document Signer.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   // App State
   const state = {
-    currentDoc: null, // { type: 'pdf'|'image'|'template', name, numPages, pagesImages: [], rawBytes }
+    activeAppMode: 'quick', // 'quick' | 'doc'
+    activeQuickTab: 'draw', // 'draw' | 'type' | 'upload' | 'saved'
+    currentDoc: null,       // { type: 'pdf'|'image'|'template', name, numPages, pagesImages: [], rawBytes }
     currentPage: 1,
     zoom: 1.0,
-    placedElements: [], // Array of { id, page, type, x, y, width, height, content, color, isBold }
+    placedElements: [],     // Array of { id, page, type, x, y, width, height, content, color, isBold }
     selectedElementId: null,
     isDragging: false,
     isResizing: false,
     dragStart: { x: 0, y: 0 },
     elementStart: { x: 0, y: 0, w: 0, h: 0 },
-    userName: localStorage.getItem('e_sig_user_name') || 'John Doe',
-    userInitials: localStorage.getItem('e_sig_user_initials') || 'JD',
-    activeSignatureTab: 'draw',
+    userName: localStorage.getItem('e_sig_user_name') || 'Alex Morgan',
+    userInitials: localStorage.getItem('e_sig_user_initials') || 'AM',
     signatureColor: '#0f2b48',
-    strokeWidth: 2.5
+    strokeWidth: 2.6,
+    activeFont: 'Caveat',
+    activeSignatureDataUrl: null
   };
 
   // Instances
   let pdfHandler = new PDFHandler();
-  let sigPad = null;
-  let quickPad = null;
+  let heroSigPad = null;
 
-  // DOM Elements
+  // DOM Elements - Views & Navigation
+  const viewQuickSig = document.getElementById('view-quick-signature');
+  const viewDocSigner = document.getElementById('view-doc-signer');
+  const navModeQuick = document.getElementById('nav-mode-quick');
+  const navModeDoc = document.getElementById('nav-mode-doc');
+  const docHeaderActions = document.getElementById('doc-header-actions');
+  const brandLogoBtn = document.getElementById('brand-logo-btn');
+  const backToQuickSigBtn = document.getElementById('back-to-quick-sig-btn');
+  const heroOpenDocBtn = document.getElementById('hero-open-doc-btn');
+  const toastContainer = document.getElementById('toast-container');
+
+  // DOM Elements - Quick Signature Studio
+  const heroCanvas = document.getElementById('hero-signature-canvas');
+  const quickTabs = document.querySelectorAll('.quick-tab-btn');
+  const quickColorBtns = document.querySelectorAll('.quick-color-btn');
+  const heroPenWidthSelect = document.getElementById('hero-pen-width-select');
+  const heroEraserBtn = document.getElementById('hero-eraser-btn');
+  const heroUndoBtn = document.getElementById('hero-undo-btn');
+  const heroClearBtn = document.getElementById('hero-clear-btn');
+
+  const heroTypeInput = document.getElementById('hero-type-input');
+  const fontCardBtns = document.querySelectorAll('.font-card-btn');
+  const heroTypePreviewImg = document.getElementById('hero-type-preview-img');
+
+  const heroUploadInput = document.getElementById('hero-upload-input');
+  const heroUploadSlider = document.getElementById('hero-upload-slider');
+  const thresholdValText = document.getElementById('threshold-val-text');
+  const heroUploadPreviewImg = document.getElementById('hero-upload-preview-img');
+  let rawUploadedImage = null;
+
+  const heroDownloadPngBtn = document.getElementById('hero-download-png-btn');
+  const heroCopyBtn = document.getElementById('hero-copy-btn');
+  const heroSaveBtn = document.getElementById('hero-save-btn');
+  const heroUseOnDocBtn = document.getElementById('hero-use-on-doc-btn');
+  const heroSavedList = document.getElementById('hero-saved-list');
+
+  // DOM Elements - Document Stage
   const emptyState = document.getElementById('empty-state');
   const docWorkspace = document.getElementById('doc-workspace');
   const docPageContainer = document.getElementById('doc-page-container');
   const docCanvas = document.getElementById('doc-canvas');
   const overlayLayer = document.getElementById('overlay-layer');
-  const docTitleInput = document.getElementById('doc-title');
   const fileInput = document.getElementById('file-upload-input');
   const dropZone = document.getElementById('drop-zone');
 
-  // Navigation & Zoom
   const prevPageBtn = document.getElementById('prev-page-btn');
   const nextPageBtn = document.getElementById('next-page-btn');
   const pageIndicator = document.getElementById('page-indicator');
@@ -46,27 +84,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const zoomLevelText = document.getElementById('zoom-level-text');
   const pageThumbnailsList = document.getElementById('page-thumbnails');
 
-  // Modals
-  const signatureModal = document.getElementById('signature-modal');
-  const quickSignModal = document.getElementById('quick-sign-modal');
   const exportModal = document.getElementById('export-modal');
-  const toastContainer = document.getElementById('toast-container');
 
-  // Signature Pad Canvas
-  const sigCanvas = document.getElementById('signature-canvas');
-  if (sigCanvas) {
-    sigPad = new SignaturePadEngine(sigCanvas, {
+  // Initialize Canvas
+  if (heroCanvas) {
+    heroSigPad = new SignaturePadEngine(heroCanvas, {
       color: state.signatureColor,
       strokeWidth: state.strokeWidth
     });
-  }
 
-  // Quick Sign Pad Canvas
-  const quickCanvas = document.getElementById('quick-sign-canvas');
-  if (quickCanvas) {
-    quickPad = new SignaturePadEngine(quickCanvas, {
-      color: '#0f2b48',
-      strokeWidth: 2.5
+    // Make canvas responsive on window resize
+    window.addEventListener('resize', () => {
+      if (state.activeAppMode === 'quick' && state.activeQuickTab === 'draw') {
+        heroSigPad.resize();
+      }
     });
   }
 
@@ -93,13 +124,317 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3200);
   }
 
-  // Auto-init PDF worker if needed
-  if (window.pdfjsLib && !window.pdfjsLib.GlobalWorkerOptions.workerSrc) {
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  // Mode Switcher: Quick Signature Studio vs Document Signer
+  function switchAppMode(mode) {
+    state.activeAppMode = mode;
+    if (mode === 'quick') {
+      viewQuickSig.classList.remove('hidden');
+      viewDocSigner.classList.add('hidden');
+
+      navModeQuick.className = 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 bg-white text-indigo-700 shadow-sm';
+      navModeDoc.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60';
+
+      docHeaderActions.classList.add('hidden');
+      if (heroSigPad && state.activeQuickTab === 'draw') {
+        setTimeout(() => heroSigPad.resize(), 50);
+      }
+    } else {
+      viewQuickSig.classList.add('hidden');
+      viewDocSigner.classList.remove('hidden');
+
+      navModeDoc.className = 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 bg-white text-indigo-700 shadow-sm';
+      navModeQuick.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60';
+
+      if (state.currentDoc) {
+        docHeaderActions.classList.remove('hidden');
+      }
+    }
+  }
+
+  navModeQuick?.addEventListener('click', () => switchAppMode('quick'));
+  navModeDoc?.addEventListener('click', () => switchAppMode('doc'));
+  brandLogoBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchAppMode('quick');
+  });
+  backToQuickSigBtn?.addEventListener('click', () => switchAppMode('quick'));
+  heroOpenDocBtn?.addEventListener('click', () => switchAppMode('doc'));
+
+  /* ========================================================
+     QUICK SIGNATURE STUDIO (HIGHLIGHT) ENGINE
+     ======================================================== */
+
+  // Switch Quick Studio Tabs (Draw / Type / Upload / Saved)
+  quickTabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      quickTabs.forEach(b => {
+        b.classList.remove('border-indigo-600', 'text-indigo-600', 'font-bold', 'active');
+        b.classList.add('border-transparent', 'text-slate-500');
+      });
+      btn.classList.add('border-indigo-600', 'text-indigo-600', 'font-bold', 'active');
+      btn.classList.remove('border-transparent', 'text-slate-500');
+
+      const targetTab = btn.dataset.quickTab;
+      state.activeQuickTab = targetTab;
+
+      document.querySelectorAll('.quick-tab-panel').forEach(panel => panel.classList.add('hidden'));
+      document.getElementById(`quick-tab-${targetTab}`).classList.remove('hidden');
+
+      if (targetTab === 'draw' && heroSigPad) {
+        setTimeout(() => heroSigPad.resize(), 30);
+      } else if (targetTab === 'type') {
+        updateHeroTypeSignatures();
+      } else if (targetTab === 'saved') {
+        renderHeroSavedSignatures();
+      }
+    });
+  });
+
+  // Ink Color Picker
+  quickColorBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const color = btn.dataset.color;
+      state.signatureColor = color;
+      if (heroSigPad) heroSigPad.setColor(color);
+      quickColorBtns.forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-indigo-500'));
+      btn.classList.add('ring-2', 'ring-offset-2', 'ring-indigo-500');
+      updateHeroTypeSignatures();
+    });
+  });
+
+  // Pen Width Selector
+  heroPenWidthSelect?.addEventListener('change', (e) => {
+    const val = parseFloat(e.target.value);
+    state.strokeWidth = val;
+    if (heroSigPad) heroSigPad.setStrokeWidth(val);
+  });
+
+  // Eraser Toggle
+  let isEraserActive = false;
+  heroEraserBtn?.addEventListener('click', () => {
+    isEraserActive = !isEraserActive;
+    if (heroSigPad) heroSigPad.setEraser(isEraserActive);
+    heroEraserBtn.classList.toggle('bg-amber-100', isEraserActive);
+    heroEraserBtn.classList.toggle('text-amber-800', isEraserActive);
+  });
+
+  // Undo & Clear
+  heroUndoBtn?.addEventListener('click', () => heroSigPad?.undo());
+  heroClearBtn?.addEventListener('click', () => {
+    heroSigPad?.clear();
+    isEraserActive = false;
+    heroSigPad?.setEraser(false);
+    heroEraserBtn?.classList.remove('bg-amber-100', 'text-amber-800');
+  });
+
+  // Type Cursive Font Selection & Generation
+  function updateHeroTypeSignatures() {
+    const text = heroTypeInput?.value.trim() || 'Alex Morgan';
+    
+    // Update live previews on all 6 font cards
+    document.querySelectorAll('.preview-name').forEach(el => {
+      el.textContent = text;
+      el.style.color = state.signatureColor;
+    });
+
+    const activeFont = state.activeFont || 'Caveat';
+    const dataUrl = TypeSignatureGenerator.generate({
+      text,
+      fontFamily: activeFont,
+      color: state.signatureColor,
+      fontSize: 60
+    });
+
+    if (dataUrl && heroTypePreviewImg) {
+      heroTypePreviewImg.src = dataUrl;
+    }
+  }
+
+  heroTypeInput?.addEventListener('input', updateHeroTypeSignatures);
+
+  fontCardBtns.forEach(card => {
+    card.addEventListener('click', () => {
+      fontCardBtns.forEach(c => {
+        c.classList.remove('border-indigo-600', 'active');
+        c.classList.add('border-slate-200');
+        c.querySelector('span').className = 'text-[10px] font-bold text-slate-400 uppercase';
+      });
+      card.classList.add('border-indigo-600', 'active');
+      card.classList.remove('border-slate-200');
+      card.querySelector('span').className = 'text-[10px] font-bold text-indigo-600 uppercase';
+
+      state.activeFont = card.dataset.font;
+      updateHeroTypeSignatures();
+    });
+  });
+
+  // Upload Paper Photo & Transparency Cleaner
+  heroUploadInput?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const img = new Image();
+      img.onload = () => {
+        rawUploadedImage = img;
+        processHeroUploadedImage();
+      };
+      img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  heroUploadSlider?.addEventListener('input', () => {
+    thresholdValText.textContent = `Level ${heroUploadSlider.value}`;
+    if (rawUploadedImage) processHeroUploadedImage();
+  });
+
+  function processHeroUploadedImage() {
+    if (!rawUploadedImage || !heroUploadPreviewImg) return;
+    const threshold = parseInt(heroUploadSlider.value, 10);
+    const cleanedUrl = UploadSignatureProcessor.processImage(rawUploadedImage, {
+      threshold,
+      enhanceContrast: true
+    });
+    heroUploadPreviewImg.src = cleanedUrl;
+  }
+
+  // Get current active signature as transparent PNG
+  function getActiveSignatureDataUrl() {
+    if (state.activeQuickTab === 'draw') {
+      if (heroSigPad.isEmpty()) {
+        showToast('Please draw your signature first', 'error');
+        return null;
+      }
+      return heroSigPad.toDataURL('image/png');
+    } else if (state.activeQuickTab === 'type') {
+      const text = heroTypeInput?.value.trim() || 'Signature';
+      return TypeSignatureGenerator.generate({
+        text,
+        fontFamily: state.activeFont || 'Caveat',
+        color: state.signatureColor,
+        fontSize: 64
+      });
+    } else if (state.activeQuickTab === 'upload') {
+      if (!heroUploadPreviewImg || !heroUploadPreviewImg.src) {
+        showToast('Please upload a signature photo first', 'error');
+        return null;
+      }
+      return heroUploadPreviewImg.src;
+    } else if (state.activeQuickTab === 'saved') {
+      return state.activeSignatureDataUrl;
+    }
+    return null;
+  }
+
+  // Hero Action: Download Transparent PNG
+  heroDownloadPngBtn?.addEventListener('click', () => {
+    const dataUrl = getActiveSignatureDataUrl();
+    if (!dataUrl) return;
+
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = `signature-${Date.now()}.png`;
+    a.click();
+    showToast('Signature downloaded as transparent PNG!', 'success');
+  });
+
+  // Hero Action: Copy to Clipboard
+  heroCopyBtn?.addEventListener('click', async () => {
+    const dataUrl = getActiveSignatureDataUrl();
+    if (!dataUrl) return;
+
+    try {
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+        showToast('Copied transparent signature to clipboard! Ready to paste.', 'success');
+      } else {
+        showToast('Clipboard image write not supported in this browser.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Could not copy to clipboard: ' + err.message, 'error');
+    }
+  });
+
+  // Hero Action: Save to Library
+  heroSaveBtn?.addEventListener('click', () => {
+    const dataUrl = getActiveSignatureDataUrl();
+    if (!dataUrl) return;
+
+    SavedSignaturesManager.saveSignature(dataUrl, 'signature', 'My Signature');
+    showToast('Signature saved to your browser library!', 'success');
+    renderHeroSavedSignatures();
+  });
+
+  // Hero Action: Sign a Document with This (Seamless Transition)
+  heroUseOnDocBtn?.addEventListener('click', () => {
+    const dataUrl = getActiveSignatureDataUrl();
+    if (!dataUrl) return;
+
+    state.activeSignatureDataUrl = dataUrl;
+    switchAppMode('doc');
+
+    if (state.currentDoc) {
+      addElementToPage('signature', dataUrl);
+      showToast('Placed signature onto document!', 'success');
+    } else {
+      showToast('Signature ready! Select or upload a document to stamp it.', 'info');
+    }
+  });
+
+  // Render Saved Signatures Grid
+  function renderHeroSavedSignatures() {
+    if (!heroSavedList) return;
+    const list = SavedSignaturesManager.getSignatures();
+    heroSavedList.innerHTML = '';
+
+    if (list.length === 0) {
+      heroSavedList.innerHTML = `
+        <div class="col-span-full py-12 text-center text-slate-400 text-sm">
+          No saved signatures yet. Create a signature and click "Save" to keep it here for 1-click access!
+        </div>
+      `;
+      return;
+    }
+
+    list.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'group relative p-3 border border-slate-200 rounded-2xl bg-white hover:border-indigo-400 hover:shadow-md transition cursor-pointer flex flex-col items-center justify-center bg-checkered';
+      card.innerHTML = `
+        <img src="${item.dataUrl}" class="max-h-20 object-contain pointer-events-none" alt="Saved signature" />
+        <div class="w-full flex items-center justify-between text-[11px] text-slate-400 mt-2 px-1">
+          <span>${new Date(item.createdAt).toLocaleDateString()}</span>
+          <span class="text-indigo-600 font-semibold group-hover:underline">Use</span>
+        </div>
+        <button class="delete-saved-btn absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-500 transition rounded" title="Delete">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      `;
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.delete-saved-btn')) return;
+        state.activeSignatureDataUrl = item.dataUrl;
+        showToast('Signature selected!', 'info');
+      });
+
+      card.querySelector('.delete-saved-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        SavedSignaturesManager.deleteSignature(item.id);
+        renderHeroSavedSignatures();
+        showToast('Saved signature deleted', 'info');
+      });
+
+      heroSavedList.appendChild(card);
+    });
   }
 
   /* ========================================================
-     DOCUMENT LOADING & VIEWING
+     DOCUMENT SIGNER WORKSPACE & PDF ENGINE
      ======================================================== */
 
   async function handleFileUpload(file) {
@@ -123,7 +458,6 @@ document.addEventListener('DOMContentLoaded', () => {
           pagesImages: []
         };
       } else if (file.type.startsWith('image/')) {
-        // Image document (PNG/JPG)
         const dataUrl = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = e => resolve(e.target.result);
@@ -138,28 +472,33 @@ document.addEventListener('DOMContentLoaded', () => {
           pagesImages: [dataUrl]
         };
       } else {
-        showToast('Unsupported file type. Please upload a PDF or image.', 'error');
+        showToast('Please upload a PDF or image file.', 'error');
         return;
       }
 
       state.currentPage = 1;
       state.placedElements = [];
       state.selectedElementId = null;
-      docTitleInput.value = fileName.replace(/\.[^/.]+$/, "");
 
       activateDocumentView();
       await renderCurrentPage();
       renderThumbnails();
-      showToast('Document loaded successfully!', 'success');
+
+      // If user had an active signature created in Quick Studio, automatically stamp it
+      if (state.activeSignatureDataUrl) {
+        addElementToPage('signature', state.activeSignatureDataUrl);
+      }
+
+      showToast('Document loaded and ready to sign!', 'success');
     } catch (err) {
       console.error(err);
       showToast('Failed to load document: ' + err.message, 'error');
     }
   }
 
-  // Sample template loader
+  // Load sample agreement templates
   async function loadTemplate(templateId) {
-    showToast('Loading sample agreement template...', 'info');
+    showToast('Loading sample agreement...', 'info');
     try {
       const pages = await DocumentTemplates.generateTemplatePages(templateId);
       const templateInfo = DocumentTemplates.getTemplatesList().find(t => t.id === templateId) || { title: 'Sample Agreement' };
@@ -175,11 +514,15 @@ document.addEventListener('DOMContentLoaded', () => {
       state.currentPage = 1;
       state.placedElements = [];
       state.selectedElementId = null;
-      docTitleInput.value = templateInfo.title;
 
       activateDocumentView();
       await renderCurrentPage();
       renderThumbnails();
+
+      if (state.activeSignatureDataUrl) {
+        addElementToPage('signature', state.activeSignatureDataUrl);
+      }
+
       showToast(`Loaded ${templateInfo.title}`, 'success');
     } catch (err) {
       console.error(err);
@@ -190,8 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function activateDocumentView() {
     emptyState.classList.add('hidden');
     docWorkspace.classList.remove('hidden');
-    document.getElementById('doc-header-actions').classList.remove('hidden');
-    document.getElementById('tools-sidebar').classList.remove('opacity-50', 'pointer-events-none');
+    docHeaderActions.classList.remove('hidden');
   }
 
   async function renderCurrentPage() {
@@ -205,7 +547,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const renderInfo = await pdfHandler.renderPageToCanvas(state.currentPage, docCanvas, 1.4 * state.zoom);
       updateOverlayDimensions(renderInfo.width, renderInfo.height);
     } else {
-      // Image or template
       const imgUrl = state.currentDoc.pagesImages[state.currentPage - 1];
       const img = new Image();
       img.src = imgUrl;
@@ -256,12 +597,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ========================================================
-     ELEMENT PLACEMENT & INTERACTION ENGINE
+     ELEMENT INTERACTION ENGINE (DRAGGABLE & RESIZABLE)
      ======================================================== */
 
   function addElementToPage(type, content, options = {}) {
     if (!state.currentDoc) {
-      showToast('Please open or select a document first', 'error');
+      showToast('Please open or upload a document first', 'error');
       return;
     }
 
@@ -271,9 +612,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const newElement = {
       id: 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
       page: state.currentPage,
-      type: type, // 'signature' | 'initials' | 'date' | 'name' | 'text' | 'seal'
+      type: type,
       content: content,
-      x: 0.38, // Center-ish normalized coordinate
+      x: 0.38,
       y: 0.45,
       width: defaultWidth,
       height: defaultHeight,
@@ -309,7 +650,6 @@ document.addEventListener('DOMContentLoaded', () => {
       elNode.style.width = `${pxW}px`;
       elNode.style.height = `${pxH}px`;
 
-      // Inner Content
       let innerHTML = '';
       if (el.type === 'signature' || el.type === 'initials' || el.type === 'seal') {
         innerHTML = `<img src="${el.content}" class="w-full h-full object-contain pointer-events-none select-none" alt="${el.type}" />`;
@@ -322,7 +662,6 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }
 
-      // Add Resize handle & Element Floating Toolbar
       const handlesHTML = `
         <div class="resize-handle"></div>
         <div class="element-toolbar">
@@ -336,10 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       elNode.innerHTML = innerHTML + handlesHTML;
-
-      // Event Listeners for dragging & resizing
       setupElementInteraction(elNode, el);
-
       overlayLayer.appendChild(elNode);
     });
   }
@@ -349,7 +685,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteBtn = elNode.querySelector('.delete-btn');
     const duplicateBtn = elNode.querySelector('.duplicate-btn');
 
-    // Delete
     deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       state.placedElements = state.placedElements.filter(item => item.id !== el.id);
@@ -358,7 +693,6 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Element removed', 'info');
     });
 
-    // Duplicate
     duplicateBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const dup = {
@@ -373,7 +707,6 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Element duplicated', 'info');
     });
 
-    // Drag start
     elNode.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.resize-handle') || e.target.closest('.element-toolbar')) return;
       e.preventDefault();
@@ -403,7 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elNode.style.top = `${el.y * containerH}px`;
       };
 
-      const onPointerUp = (upEvent) => {
+      const onPointerUp = () => {
         state.isDragging = false;
         elNode.removeEventListener('pointermove', onPointerMove);
         elNode.removeEventListener('pointerup', onPointerUp);
@@ -415,7 +748,6 @@ document.addEventListener('DOMContentLoaded', () => {
       elNode.addEventListener('pointercancel', onPointerUp);
     });
 
-    // Resize start
     resizeHandle.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -437,7 +769,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let newW = Math.max(0.04, Math.min(1 - el.x, state.elementStart.w + deltaX));
         let newH = Math.max(0.02, Math.min(1 - el.y, state.elementStart.h + deltaY));
 
-        // Preserve aspect ratio for signatures
         if (el.type === 'signature' || el.type === 'initials') {
           const originalAspect = state.elementStart.h / state.elementStart.w;
           newH = newW * originalAspect;
@@ -464,7 +795,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Click outside unselects
   document.addEventListener('pointerdown', (e) => {
     if (!e.target.closest('.placed-element') && !e.target.closest('#tools-sidebar')) {
       if (state.selectedElementId) {
@@ -474,7 +804,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Keyboard shortcut listener
   document.addEventListener('keydown', (e) => {
     if ((e.key === 'Delete' || e.key === 'Backspace') && state.selectedElementId) {
       if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
@@ -486,325 +815,40 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ========================================================
-     SIGNATURE MODAL TABS & ACTIONS
+     DOCUMENT SIDEBAR TOOLS
      ======================================================== */
 
-  function openSignatureModal(mode = 'signature') {
-    signatureModal.dataset.mode = mode;
-    document.getElementById('sig-modal-title').textContent = mode === 'initials' ? 'Create Initials' : 'Create Signature';
-    signatureModal.classList.remove('hidden');
-    signatureModal.classList.add('flex');
-
-    if (sigPad) {
-      setTimeout(() => {
-        sigPad.resize();
-        sigPad.clear();
-      }, 50);
-    }
-    loadSavedSignaturesUI();
-  }
-
-  function closeSignatureModal() {
-    signatureModal.classList.add('hidden');
-    signatureModal.classList.remove('flex');
-  }
-
-  // Signature Tab Switcher
-  const sigTabs = document.querySelectorAll('.sig-tab-btn');
-  sigTabs.forEach(btn => {
-    btn.addEventListener('click', () => {
-      sigTabs.forEach(b => {
-        b.classList.remove('text-indigo-600', 'border-indigo-600', 'active');
-        b.classList.add('text-slate-500', 'border-transparent');
-      });
-      btn.classList.add('text-indigo-600', 'border-indigo-600', 'active');
-      btn.classList.remove('text-slate-500', 'border-transparent');
-
-      const targetTab = btn.dataset.tab;
-      document.querySelectorAll('.sig-tab-content').forEach(c => c.classList.add('hidden'));
-      document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
-      state.activeSignatureTab = targetTab;
-
-      if (targetTab === 'draw' && sigPad) {
-        sigPad.resize();
-      } else if (targetTab === 'type') {
-        updateTypePreview();
-      } else if (targetTab === 'saved') {
-        loadSavedSignaturesUI();
-      }
-    });
-  });
-
-  // Color selection in signature pad
-  document.querySelectorAll('.sig-color-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const color = btn.dataset.color;
-      state.signatureColor = color;
-      if (sigPad) sigPad.setColor(color);
-      document.querySelectorAll('.sig-color-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-indigo-500'));
-      btn.classList.add('ring-2', 'ring-offset-2', 'ring-indigo-500');
-      updateTypePreview();
-    });
-  });
-
-  // Pen width selector
-  document.getElementById('pen-width-select')?.addEventListener('change', (e) => {
-    const val = parseFloat(e.target.value);
-    state.strokeWidth = val;
-    if (sigPad) sigPad.setStrokeWidth(val);
-  });
-
-  // Eraser toggle
-  let isEraserActive = false;
-  const eraserBtn = document.getElementById('eraser-btn');
-  eraserBtn?.addEventListener('click', () => {
-    isEraserActive = !isEraserActive;
-    if (sigPad) sigPad.setEraser(isEraserActive);
-    eraserBtn.classList.toggle('bg-amber-100', isEraserActive);
-    eraserBtn.classList.toggle('text-amber-800', isEraserActive);
-  });
-
-  // Undo / Redo / Clear
-  document.getElementById('sig-undo-btn')?.addEventListener('click', () => sigPad?.undo());
-  document.getElementById('sig-clear-btn')?.addEventListener('click', () => {
-    sigPad?.clear();
-    isEraserActive = false;
-    sigPad?.setEraser(false);
-    eraserBtn?.classList.remove('bg-amber-100', 'text-amber-800');
-  });
-
-  // Type signature live preview
-  const typeInput = document.getElementById('type-sig-input');
-  const typeFontSelect = document.getElementById('type-font-select');
-  const typePreviewImg = document.getElementById('type-sig-preview');
-
-  function updateTypePreview() {
-    if (!typeInput || !typePreviewImg) return;
-    const text = typeInput.value.trim() || 'Your Signature';
-    const font = typeFontSelect.value || 'Caveat';
-    const url = TypeSignatureGenerator.generate({
-      text,
-      fontFamily: font,
-      color: state.signatureColor,
-      fontSize: 58
-    });
-    if (url) {
-      typePreviewImg.src = url;
-    }
-  }
-
-  typeInput?.addEventListener('input', updateTypePreview);
-  typeFontSelect?.addEventListener('change', updateTypePreview);
-
-  // Upload signature & background cleaner
-  const uploadInput = document.getElementById('upload-sig-input');
-  const uploadPreviewImg = document.getElementById('upload-sig-preview');
-  const uploadThresholdSlider = document.getElementById('upload-threshold-slider');
-  let rawUploadedImage = null;
-
-  uploadInput?.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const img = new Image();
-      img.onload = () => {
-        rawUploadedImage = img;
-        processUploadedSig();
-      };
-      img.src = evt.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  uploadThresholdSlider?.addEventListener('input', () => {
-    if (rawUploadedImage) processUploadedSig();
-  });
-
-  function processUploadedSig() {
-    if (!rawUploadedImage || !uploadPreviewImg) return;
-    const threshold = parseInt(uploadThresholdSlider.value, 10);
-    const cleanedUrl = UploadSignatureProcessor.processImage(rawUploadedImage, {
-      threshold,
-      enhanceContrast: true
-    });
-    uploadPreviewImg.src = cleanedUrl;
-  }
-
-  // Saved signatures list
-  function loadSavedSignaturesUI() {
-    const container = document.getElementById('saved-signatures-list');
-    if (!container) return;
-    const list = SavedSignaturesManager.getSignatures();
-    container.innerHTML = '';
-
-    if (list.length === 0) {
-      container.innerHTML = `
-        <div class="col-span-full py-8 text-center text-slate-400 text-sm">
-          No saved signatures yet. Sign once and check "Save for future use" to access them here!
-        </div>
-      `;
-      return;
-    }
-
-    list.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'group relative p-3 border border-slate-200 rounded-xl hover:border-indigo-400 bg-white hover:shadow-md transition cursor-pointer flex flex-col items-center justify-center bg-checkered';
-      card.innerHTML = `
-        <img src="${item.dataUrl}" class="max-h-16 object-contain pointer-events-none" alt="Saved signature" />
-        <span class="text-[11px] text-slate-400 mt-2">${new Date(item.createdAt).toLocaleDateString()}</span>
-        <button class="delete-saved-btn absolute top-1 right-1 opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-500 transition" title="Delete">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
-      `;
-
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.delete-saved-btn')) return;
-        applySignatureDataUrl(item.dataUrl);
-      });
-
-      card.querySelector('.delete-saved-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        SavedSignaturesManager.deleteSignature(item.id);
-        loadSavedSignaturesUI();
-        showToast('Saved signature deleted', 'info');
-      });
-
-      container.appendChild(card);
-    });
-  }
-
-  // Insert signature button handler
-  document.getElementById('apply-signature-btn')?.addEventListener('click', () => {
-    let finalDataUrl = null;
-    const mode = signatureModal.dataset.mode || 'signature';
-
-    if (state.activeSignatureTab === 'draw') {
-      if (sigPad.isEmpty()) {
-        showToast('Please draw your signature first', 'error');
-        return;
-      }
-      finalDataUrl = sigPad.toDataURL('image/png');
-    } else if (state.activeSignatureTab === 'type') {
-      const text = typeInput.value.trim() || 'Signature';
-      finalDataUrl = TypeSignatureGenerator.generate({
-        text,
-        fontFamily: typeFontSelect.value,
-        color: state.signatureColor,
-        fontSize: 64
-      });
-    } else if (state.activeSignatureTab === 'upload') {
-      if (!uploadPreviewImg || !uploadPreviewImg.src) {
-        showToast('Please choose an image file first', 'error');
-        return;
-      }
-      finalDataUrl = uploadPreviewImg.src;
-    }
-
-    if (!finalDataUrl) {
-      showToast('Could not generate signature', 'error');
-      return;
-    }
-
-    // Save to local storage if checked
-    if (document.getElementById('save-sig-checkbox')?.checked) {
-      SavedSignaturesManager.saveSignature(finalDataUrl, mode, mode === 'initials' ? 'My Initials' : 'My Signature');
-    }
-
-    applySignatureDataUrl(finalDataUrl, mode);
-  });
-
-  function applySignatureDataUrl(dataUrl, mode = 'signature') {
-    closeSignatureModal();
-    if (state.currentDoc) {
-      addElementToPage(mode, dataUrl);
-    } else {
-      // Document not loaded yet: download or copy
-      copyOrDownloadSignature(dataUrl);
-    }
-  }
-
-  function copyOrDownloadSignature(dataUrl) {
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = `signature-${Date.now()}.png`;
-    a.click();
-    showToast('Signature downloaded as transparent PNG!', 'success');
-  }
-
-  /* ========================================================
-     QUICK SIGN PAD (STANDALONE SIGNATURE DOWNLOADER)
-     ======================================================== */
-
-  document.getElementById('quick-sign-btn')?.addEventListener('click', () => {
-    quickSignModal.classList.remove('hidden');
-    quickSignModal.classList.add('flex');
-    if (quickPad) {
-      setTimeout(() => {
-        quickPad.resize();
-        quickPad.clear();
-      }, 50);
-    }
-  });
-
-  document.getElementById('close-quick-sign-btn')?.addEventListener('click', () => {
-    quickSignModal.classList.add('hidden');
-    quickSignModal.classList.remove('flex');
-  });
-
-  document.getElementById('quick-clear-btn')?.addEventListener('click', () => quickPad?.clear());
-  document.getElementById('quick-undo-btn')?.addEventListener('click', () => quickPad?.undo());
-
-  document.getElementById('quick-download-png-btn')?.addEventListener('click', () => {
-    if (quickPad.isEmpty()) {
-      showToast('Please draw your signature first', 'error');
-      return;
-    }
-    const dataUrl = quickPad.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = `my-signature-${Date.now()}.png`;
-    a.click();
-    showToast('Downloaded transparent PNG!', 'success');
-  });
-
-  document.getElementById('quick-copy-clip-btn')?.addEventListener('click', async () => {
-    if (quickPad.isEmpty()) {
-      showToast('Please draw your signature first', 'error');
-      return;
-    }
-    const trimmed = quickPad.getTrimmedCanvas();
-    if (trimmed && navigator.clipboard && window.ClipboardItem) {
-      try {
-        trimmed.toBlob(async (blob) => {
-          await navigator.clipboard.write([
-            new ClipboardItem({ 'image/png': blob })
-          ]);
-          showToast('Copied signature to clipboard!', 'success');
-        });
-      } catch (err) {
-        showToast('Clipboard copy failed. Use Download PNG instead.', 'error');
-      }
-    } else {
-      showToast('Clipboard image copy not supported in this browser', 'error');
-    }
-  });
-
-  /* ========================================================
-     TOOLBAR TOOLS (Date, Name, Stamp, Text)
-     ======================================================== */
-
-  // Signature placement button
+  // Signature tool
   document.getElementById('tool-signature-btn')?.addEventListener('click', () => {
-    openSignatureModal('signature');
+    let sigUrl = state.activeSignatureDataUrl || getActiveSignatureDataUrl();
+    if (!sigUrl) {
+      switchAppMode('quick');
+      showToast('Create your signature here first!', 'info');
+      return;
+    }
+    addElementToPage('signature', sigUrl);
   });
 
-  // Initials button
+  // Initials tool
   document.getElementById('tool-initials-btn')?.addEventListener('click', () => {
-    openSignatureModal('initials');
+    const initials = prompt('Enter your initials:', state.userInitials) || state.userInitials;
+    if (initials) {
+      state.userInitials = initials;
+      localStorage.setItem('e_sig_user_initials', initials);
+
+      const initialsUrl = TypeSignatureGenerator.generate({
+        text: initials,
+        fontFamily: 'Caveat',
+        color: state.signatureColor,
+        fontSize: 54
+      });
+      if (initialsUrl) {
+        addElementToPage('initials', initialsUrl, { width: 0.14, height: 0.06 });
+      }
+    }
   });
 
-  // Date tool
+  // Today's Date tool
   document.getElementById('tool-date-btn')?.addEventListener('click', () => {
     const today = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
@@ -832,14 +876,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Approved Seal Badge tool
+  // Approved Seal tool
   document.getElementById('tool-seal-btn')?.addEventListener('click', () => {
     const sealCanvas = document.createElement('canvas');
     sealCanvas.width = 300;
     sealCanvas.height = 100;
     const ctx = sealCanvas.getContext('2d');
 
-    // Draw seal
     ctx.strokeStyle = '#059669';
     ctx.lineWidth = 4;
     ctx.strokeRect(6, 6, 288, 88);
@@ -904,7 +947,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ========================================================
-     FILE DROPZONE & SAMPLE TEMPLATES
+     FILE UPLOAD DROPZONE & TEMPLATES
      ======================================================== */
 
   fileInput?.addEventListener('change', (e) => {
@@ -912,7 +955,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (file) handleFileUpload(file);
   });
 
-  // Drag and drop to dropzone
   if (dropZone) {
     ['dragenter', 'dragover'].forEach(eventName => {
       dropZone.addEventListener(eventName, (e) => {
@@ -935,7 +977,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Template cards
   document.querySelectorAll('.template-card-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const templateId = btn.dataset.template;
@@ -989,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Signed_${docTitleInput.value || 'document'}.pdf`;
+      a.download = `Signed_${state.currentDoc.name.replace(/\.[^/.]+$/, "")}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
 
@@ -1007,16 +1048,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Download Current Page as High-Res Image
   document.getElementById('download-page-img-btn')?.addEventListener('click', () => {
-    // Bake placed elements onto canvas
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = docCanvas.width;
     tempCanvas.height = docCanvas.height;
     const ctx = tempCanvas.getContext('2d');
 
-    // Draw document canvas first
     ctx.drawImage(docCanvas, 0, 0);
 
-    // Draw placed elements for this page
     const currentElements = state.placedElements.filter(el => el.page === state.currentPage);
     const promises = currentElements.map(el => {
       return new Promise((resolve) => {
@@ -1047,29 +1085,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const imgUrl = tempCanvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = imgUrl;
-      a.download = `${docTitleInput.value || 'page'}-page-${state.currentPage}.png`;
+      a.download = `${state.currentDoc.name.replace(/\.[^/.]+$/, "")}-page-${state.currentPage}.png`;
       a.click();
       showToast('Page downloaded as image!', 'success');
     });
   });
 
-  // Clear all button
+  // Clear document
   document.getElementById('clear-all-doc-btn')?.addEventListener('click', () => {
-    if (confirm('Are you sure you want to clear this document and start over?')) {
+    if (confirm('Clear this document and return to empty state?')) {
       state.currentDoc = null;
       state.placedElements = [];
       state.selectedElementId = null;
       state.currentPage = 1;
       emptyState.classList.remove('hidden');
       docWorkspace.classList.add('hidden');
-      document.getElementById('doc-header-actions').classList.add('hidden');
-      document.getElementById('tools-sidebar').classList.add('opacity-50', 'pointer-events-none');
+      docHeaderActions.classList.add('hidden');
       showToast('Workspace reset', 'info');
     }
   });
 
-  // Modal close buttons
-  document.getElementById('close-sig-modal-btn')?.addEventListener('click', closeSignatureModal);
+  // Initial load
+  updateHeroTypeSignatures();
+  renderHeroSavedSignatures();
 
   function capitalize(str) {
     if (!str) return '';
